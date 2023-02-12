@@ -1,0 +1,44 @@
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ Highlight R code
+ :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+/*highlight R code */
+#rdoc pre .operator, #rdoc pre .paren{color:#687687}
+#rdoc pre .literal{color:#5848f6}
+#rdoc pre .number{color:#0000cd}
+#rdoc pre .comment{color:#228B22}
+#rdoc pre .keyword{color:#00f;font-weight:700}
+#rdoc pre .identifier{color:#000}
+#rdoc pre .string{color:red}
+
+
+/*R code block */
+#rdoc pre .r, #rdoc .bash{display:block;padding:9.5px;margin:0 0 10px;margin-top:10px;font-size:13px;line-height:20px;word-break:break-all;word-wrap:break-word;white-space:pre-wrap;background-color:#F5F5F5;border:1px solid rgba(0,0,0,0.15);border-radius:4px; font-family:monospace;}
+#rdoc pre:not([class]){background-color:#fff;color:black;}
+#rdoc pre{margin-bottom:25px;}
+#rdoc pre.r{max-height:800px; display:block; overflow:auto;}
+
+/* --Toc --
+--------------------------------------*/
+#TOC { margin:0 0 0 5px;padding:4px;border:1px solid #CCC;border-radius:5px;box-shadow:2px 2px 10px -2px #666;background-color:#f6f6f6;width:95%;}
+
+/* -- others--
+--------------------------------------*/
+#rdoc .bash{
+	background-color:black; color:white;
+}
+
+#rdoc img{background-color:#fff;background-color:#FFF;border-radius:3px;border:1px solid #CCC;box-shadow:2px 2px 12px -5px #999;margin:0 5px;margin-bottom:5px;padding:5px;text-align:center}
+.blue{color:blue;}
+.red{color:red;}
+.green{color:green;}
+.valign_middle { vertical-align:middle;}
+
+#rdoc h1, #rdoc h2, #rdoc h3, #rdoc h4, #rdoc h5{
+	margin-top:30px; margin-bottom:15px;
+}
+
+#rdoc .caption{display:none;}
+code.inline-r-code {font-weight: normal; color: #FC4E07; }
+pre code.inline-r-code {font-weight: normal; color: black; } /* output of r*/
+

@@ -1,0 +1,128 @@
+
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ Adsense, addthis, Books
+ :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+@media (max-width: 768px) {.addthis_native_toolbox,.ak_spacer_mobile{margin-top:95px;}} /*petit ecran*/
+@media (min-width: 769px) {.annonce_adaptable_bottom{width: 340px; height:282px;}}
+
+.book_ads{width:175px;!important; height: 220px; text-align: center;}
+
+
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ Design
+ :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+ #header, #global{
+ 	background-color: white;	
+ }
+ #header, #global, #footer{
+ 	box-shadow: 0px 0px 10px rgba(50, 50, 50, 0.17);
+ }
+#sub-header{
+	background-color: #1565C0;
+}
+#site-name{
+	color: #1565C0;
+}
+.content{padding:0px;}
+table thead th, .table-head{
+	background-color: #1565C0;
+	color:white;
+}
+.basic-button{
+	background-color: #1565C0;
+	color:white;
+}
+button.submit{
+	background-color: #1565C0;
+	color:white;
+	border-color: none;
+}
+a{
+	color: #4285f4;
+}
+
+/* Menu */
+.module-mini-top{
+	border-bottom: 2px #4285f4 solid;
+}
+.module-mini-container .sub-title{
+	color: #4285f4;
+}
+
+#sub-header .cssmenu > ul > li > .cssmenu-title {
+    color: white;
+}
+
+#sub-header .cssmenu-horizontal > ul > li {
+    border-right: 1px solid #DDDDDD;
+}
+
+/* Resources: source afiliate marketing */
+#sub-header .cssmenu-horizontal > ul > li:nth-child(6) {
+	background-color: #ff6101;
+}
+#sub-header .cssmenu-horizontal > ul > li:nth-child(6):hover {
+	background-color: #333333;
+}
+
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ Content
+ :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+.block, .small-block {
+	padding: 0.8em;
+	/*background-color: white;*/
+	border-style: solid;
+	border-width: 2px 1px 1px 1px;
+	border-color: #1565C0 #CCCCCC #1565C0 #CCCCCC;
+}
+.small-block .content {
+	margin: 0;
+}
+.small-block h1 {
+	border: none;
+}
+.small-block {
+	float: left;
+	margin: 1% 0.5%;
+}
+/* ---- Affiche 3 blocs côte a côte ---- */
+.small-block {
+	width: 32.33%;
+}
+/* ---- Affiche des blocs en vertical ---- */
+@media (max-width: 480px) {
+	.small-block{
+		width: 100%;
+		margin: 1% 0%;
+	}
+}
+
+
+/* Partenaires moduule web */
+.content-friends {
+    border-width: 7px 1px 1px 1px;
+    border-top-color: #1565C0;
+}
+.content-privileged-friends {
+    border-width: 7px 1px 1px 1px;
+    border-top-color: #E7B800;
+}
+
+.star-new{
+	color: #E7B800;
+}
+
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ Web, downloads articles, 
+ :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+ /* pour les grand ecrans, sinon 100% par defaut.
+ Le conteneur de mot clés
+ */
+ @media (min-width: 769px) {.options{max-width: 350px;}} 
+
+
+
+
+
+

@@ -1,0 +1,635 @@
+# Užkraunami paketai
+
+```{r, eval=FALSE}
+library(tidyverse)
+```
+
+# Nustatymai
+```{r, eval=FALSE}
+Sys.setlocale(locale = "lt_LT.UTF-8")
+```
+## Duomenų įkėlimas
+
+```{r}
+
+data(trees, package = "datasets")
+data(iris, package = "datasets")
+data(CO2, package = "datasets")
+data(BOD, package = "datasets")
+```
+
+## Duomenų peržiūra
+
+```{r, eval=FALSE}
+glimpse(trees)
+```
+
+```{r, eval=FALSE}
+glimpse(iris)
+```
+
+```{r, eval=FALSE}
+glimpse(CO2)
+```
+
+```{r, eval=FALSE}
+glimpse(BOD)
+```
+
+```{r, eval=FALSE}
+view(trees)
+```
+
+```{r, eval=FALSE}
+view(iris)
+```
+
+```{r, eval=FALSE}
+view(CO2)
+```
+
+```{r, eval=FALSE}
+view(BOD)
+```
+
+## Pirmasis grafikas
+```{r}
+ggplot(data = trees, mapping = aes(x = Girth, y = Volume)) +
+  geom_point()
+```
+
+## 8.8
+```{r}
+ggplot(data = CO2, mapping = aes(x = uptake, y = conc)) +
+  geom_point()
+```
+
+## 8.9
+```{r}
+ggplot(BOD, aes(x = Time, y = demand))
+```
+
+Nėra duomenis vaizduojančios linijos bei taškų, nes nenurodytas norimo
+grafiko tipas (geomas).
+
+## 8.12
+```{r}
+?geom_point
+?geom_line
+ggplot(trees, aes(Height, Girth, color=Volume))+
+  geom_point()
+ggplot(trees, aes(Height, Girth, alpha=Volume))+
+  geom_point()
+```
+
+## 8.13
+```{r}
+ggplot(iris, aes(x = Sepal.Width, y = Petal.Width, color = Species)) +
+  geom_point() +
+  geom_line()
+ggplot(iris, aes(x = Sepal.Width, y = Petal.Width)) +
+  geom_point(aes(color = Species)) +
+  geom_line()
+
+iris2 <- filter(iris, Species %in% c("setosa", "virginica"))
+ggplot(iris2, aes(x = Sepal.Width, y = Petal.Width)) +
+  geom_point(data = iris2, aes(color = Species)) +
+  geom_line()
+```
+
+b. Grafikas buvo nubraižytas pagal iris2 duomenis, o estetinis išdėstymas
+nurodytas funkcijos ggplot() skliaustuose.
+c. Matomos 3 skirtingų spalvų linijos ir 2 spalvų taškai.
+
+## 8.14
+```{r}
+data(Rabbit, package = "MASS")
+```
+
+```{r, eval=FALSE}
+glimpse(Rabbit)
+```
+```{r, eval=FALSE}
+view(Rabbit)
+```
+
+
+```{r, eval=FALSE}
+summary(Rabbit)
+```
+```{r}
+ggplot(Rabbit, aes(BPchange, Dose, color=Treatment, group=Run)) +
+  geom_line()+
+  geom_point()
+```
+
+a. Didinant vaisto dozę iki 100 ug kontrolinės grupės kraujospūdžio pokytis
+padidėja labiau nei MDL grupės, o nuo 100 ug kraujospūdžio pokytis didėja
+labiau MDL grupėje nei kontrolinėje.
+b. .  
+    i. kontrolinės grupės kraujospūdžio pokytis didesnis nei MDL grupės.  
+    ii. MDL grupės kraujospūdžio pokytis didesnis nei kontrolinės grupės.  
+c. Ties 50 μg.
+
+## 8.18
+
+1. #9a5485 - tai alyvinė/purpurinė spalva.
+
+```{r}
+ggplot(iris, aes(Petal.Width, fill=Species)) +
+  geom_density(color='blue',size=1, alpha=0.5)
+```
+## 8.21
+### 8.21.1
+#### a.
+```{r}
+ggplot(iris, aes(Sepal.Width)) +
+  geom_bar()
+```
+#### b.
+```{r}
+ggplot(iris, aes(Sepal.Width)) +
+  geom_density()
+```
+#### c.
+```{r}
+ggplot(iris, aes(Species)) +
+  geom_bar()
+```
+Irisų rūšių skaičius - vienodas.
+#### d.
+```{r}
+ggplot(iris, aes(Sepal.Length, Petal.Length )) +
+  geom_point()
+```
+Tarp Sepal.Length ir Petal.Length yra teigiama tiesinė priklausomybė.
+#### e.
+```{r}
+ggplot(iris, aes(Species,Petal.Length)) +
+  geom_col()
+```
+#### f.
+```{r}
+ggplot(iris, aes(Species,Sepal.Width)) +
+  geom_boxplot()
+```
+
+### 8.21.2
+#### a.
+```{r}
+ggplot(npk, aes(yield)) +
+  geom_col(bins = 6, color = "black")
+```
+Yra 23 reikšmės didesnės už 65.
+#### b.
+```{r}
+ggplot(npk, aes(yield)) +
+  geom_density(adjust = 1.8, fill = "green4")
+```
+Labiausiai tikėtinos reikšmės yra tarp 50 ir 60.
+#### c.
+```{r}
+ggplot(npk, aes(block, yield)) +
+  geom_boxplot() +
+```
+
+##### i.
+        
+```{r}
+mean <- npk %>%
+  group_by(block)%>%
+  summarise(mean = mean(yield))
+```
+    
+```{r}
+mean%>%
+  arrange(desc(mean))
+```
+
+##### ii.
+
+```{r}
+IQR <- npk%>%
+  group_by(block)%>%
+  summarise(IQR(yield))
+```
+
+```{r}
+IQR %>%
+  arrange(desc(`IQR(yield)`))
+```
+
+##### iii.
+4 blokas
+
+#### d.
+
+```{r}
+ggplot(npk, aes(x = block, y = yield))+
+  geom_boxplot()+
+  geom_jitter(width = 0.1)
+```
+
+i. 1, 3 ir 4 grupės ilgiausios, kitos mažesnės
+
+ii. Funkcija 'width' nustato kiek į šoną pasislenka išsibarstę taškai (jitter), 
+sumažina taškų persidengą.
+
+### 8.22
+```{r }
+c <- ggplot(mpg, aes(hwy)); c2 <- ggplot(mpg)
+c + geom_dotplot()
+```
+## 8.25
+
+### 8.25.1
+```{r}
+glimpse(iris)
+ggplot(iris, aes(Sepal.Width,Petal.Length,color=Species)) +
+  geom_point() +
+  facet_wrap(~ Species)
+ggplot(iris, aes(Petal.Length, fill=Species)) +
+  geom_density() +
+  facet_wrap(~ Species)
+```
+### 8.25.2
+
+```{r}
+ggplot(npk, aes(block, yield, color = P)) +
+  geom_point() +
+  facet_grid(cols = vars(N,P,K,),labeller = label_both)
+```
+
+## 8.26
+### 8.26.1
+
+```{r}
+ggplot(trees, aes(Height)) +
+geom_histogram(bins = 14, color='green', fill='green4',size=1) +
+  labs(
+    x = "Aukštis",
+    y = "Kiekis",
+    title = "Medžių grafikas",
+    subtitle = "Sukūrė: Aidas Batvinskas",
+    caption = "< 2022-12-29 >")
+```
+
+### 8.26.2
+
+```{r}
+ggplot(iris, aes(Sepal.Width, fill=Species)) +
+geom_density(alpha=0.6) +
+  labs(
+    x = "Taurėlapio plotis",
+    y = "Tankis",
+    fill = "Rūšis")
+```
+
+# S06 užduotėlės
+
+```{r setup2, message=FALSE, warning=FALSE, results='hide', include=TRUE}
+library(ggplot2)
+library(tidyverse)
+library(datasets)
+library(plotly)
+library(patchwork)
+library(ggpubr)
+library(ggrepel)
+library(gghighlight)
+library(ggthemes)
+library(esquisse)
+library(paletteer)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 9.1
+
+```{r}
+smegeniukai <- ggplot2::msleep
+glimpse(smegeniukai)
+```
+```{r}
+ggplot(smegeniukai, aes(x = brainwt, y = awake)) +
+  geom_point(aes(color = vore)) +
+  scale_x_log10(labels = scales::label_number(suffix = " kg")) +
+  scale_y_reverse(n.breaks = 9, labels = scales::label_number(suffix = " val.", 
+    accuracy = 1)) +
+  scale_color_manual(values = c("green3", "pink4", "orange1","purple","red5"), 
+    na.value = "red3") 
+```
+
+## 9.2
+
+```{r}
+Orange->apelsinai
+ggplot(apelsinai, aes(x = age, y = circumference)) +
+  geom_point() +
+  geom_point(aes(color = Tree)) -> gg3
+gg3 +
+  labs(x = "Medžio amžius",
+       y = "Perimetras",
+       title = "Apelsinmedžiai") +
+  theme_bw() ->gg33
+gg33
+```
+
+## 9.3
+
+```{r}
+gg33 +
+  theme(legend.position = "left",panel.grid = element_line(color = "green"))
+```
+
+## 9.4
+### 9.4.1
+```{r}
+gg_temoms_1 <- ggplot(iris, aes(x = Species, y = Sepal.Length, alpha= 0.5)) +
+  geom_point()
+gg_temoms_1
+```
+
+```{r}
+gg_temoms_2 <- ggplot(iris, aes(x = Species, y = Sepal.Length)) +
+  geom_col()
+gg_temoms_2
+```
+### 9.4.2
+
+
+```{r}
+gg_temoms_1 + theme_set(theme_bw())
+```
+
+```{r}
+gg_temoms_2 + theme_set(theme_bw())
+```
+
+```{r}
+gg_temoms_1 + theme_set(ggthemes::theme_solarized())
+```
+
+```{r}
+gg_temoms_2 + theme_set(ggthemes::theme_solarized())
+```
+
+```{r}
+gg_temoms_1 + theme_set(ggthemes::theme_excel())
+```
+
+```{r}
+gg_temoms_2 + theme_set(ggthemes::theme_excel())
+```
+
+## 9.5
+### 9.5.1
+```{r}
+irisai <-
+  ggplot(iris, aes(x = Sepal.Length, fill = Species, color = Species)) +
+  geom_density(alpha = 0.3, adjust = 1.5)
+irisai +
+  geom_hline(yintercept = 0.7, color = "green", linetype = "longdash")
+```
+
+### 9.5.2
+
+```{r}
+vidurkiai <- iris %>%
+  group_by(Species) %>%
+  summarize('vidurkis' = mean(Sepal.Length))
+irisai +
+  geom_vline(
+    data = vidurkiai,
+    aes(xintercept = vidurkiai$vidurkis),
+    color = c('red', 'green', 'blue'),
+    linetype = 'longdash',
+    size = 2
+  ) +
+  theme_light()
+```
+
+## 9.6
+### 9.6.1
+```{r}
+iris
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  geom_point() +
+  geom_smooth()
+```
+Atrodo kaip kreivė, o ne tiesė.
+
+### 9.6.2
+
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  geom_point() +
+  geom_smooth(method = "lm", nformula = y ~ x, se = FALSE, size = 1)
+```
+### 9.6.3
+
+```{r}
+ggplot(smegeniukai, aes(x = brainwt, y = bodywt)) +
+  geom_point() +
+  scale_y_log10() +
+  scale_x_log10() +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, size = 1)
+```
+
+## 9.7
+### 9.7.1
+```{r}
+ggplot(CO2, aes(conc, Type)) +
+  geom_boxplot() +
+  coord_flip()
+```
+Grafike x ir y ašys sukeistos vietomis.
+
+### 9.7.2
+
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  geom_point() +
+  coord_equal()
+```
+Išlaikytos proporcijos tarp x ir y ašių.
+
+### 9.7.3
+
+```{r}
+ggplot(smegeniukai, aes(x = brainwt, y = bodywt/1000, color=sleep_total)) +
+  geom_point() +
+  scale_y_log10() +
+  scale_x_log10()
+```
+
+## 9.8
+### 9.8.1
+```{r}
+geom_line_point <- function(x){
+  list(
+    paletteer::scale_color_paletteer_d("RColorBrewer::Pastel2"),
+    scale_x_reverse(
+      n.breaks = 4,
+      labels = scales::label_number(accuracy = 0.1, decimal.mark = ",")
+    ),
+    scale_y_continuous(
+      labels = scales::label_number(accuracy = 0.1, decimal.mark = ",")
+    ),
+    theme_dark()
+  )
+}
+irisai + geom_line_point()
+```
+### 9.8.2
+
+```{r}
+spalvos_2 <- function(x){
+  list(
+    aes(fill = "black", color= "green"),
+    theme_dark()
+  )
+}
+irisai + spalvos_2()
+```
+Funkcija visai nepadeda lengviau pažvelgti į duomenis, bet veikia.
+
+## 9.9
+
+```{r}
+mot<-ggplot(women, aes(height, weight)) +
+  geom_point()
+mot
+  ggsave("moteru_duomenys.jpg", plot = mot, width = 12, height = 10, units = "cm")
+```
+
+## 9.10
+
+```{r}
+mano <- ggplot( smegeniukai, aes(x = brainwt, y = bodywt, color = vore)) +
+  geom_point() +
+  scale_y_log10() +
+  scale_x_log10()
+mano
+ggsave("mano.jpg", plot = mano, width = 12, height = 10, units = "cm")
+```
+
+## 9.11
+
+```{r}
+interaktyvus <- ggplot(
+  smegeniukai, 
+  aes(
+    x = brainwt, 
+    y = bodywt, 
+    color = conservation,
+    label = name, kuno_svoris = bodywt, smegenu_svoris = brainwt,
+    pabudes_val = awake
+  )
+) +
+  geom_point() +
+  scale_y_log10() +
+  scale_x_log10() 
+
+ggplotly(interaktyvus)
+```
+Mažiausias gyvūnas - mažoji žvirblinė pelėda (bodywt:0,005, brainwt:0,00014), 
+didžiausias - afrikinis dramblys (bodywt:6654, brainwt:5,712). Pelėda per parą
+nemiega 14,9 h, o dramblys 20,7h. Gamtosauginiai statusai: pelėdos - lc, 
+dramblio - vu.
+
+## 9.12
+
+```{r}
+pirmas <- ggplot(smegeniukai, aes(brainwt, bodywt, color=vore)) +
+  geom_boxplot()
+antras <- ggplot(smegeniukai, aes(bodywtwt, awake, color=vore)) +
+  geom_point()
+trecias <- ggplot(smegeniukai, aes(awake, vore, color=vore)) +
+  geom_line()
+  
+pirmas/antras/trecias +
+  plot_annotation(tag_levels = 'a', title = "Smegenys")
+pirmas+antras+trecias
+(pirmas + antras) / trecias +
+  plot_annotation(tag_levels = 'I', title = "Smegenys")
+```
+
+## 9.13
+
+```{r}
+ggpubr::ggarrange(pirmas/antras/trecias, nrow = 1, common.legend = TRUE, labels
+  = c('a','b','c'))
+ggpubr::ggarrange(pirmas+antras+trecias, ncol = 1, common.legend = TRUE, labels
+  = c('I','II','III'))
+```
+
+## 9.14
+
+```{r}
+ggplot(smegeniukai, aes(x=conservation)) +
+geom_bar() +
+ggpubr::rotate_x_text(angle = 90)
+```
+
+## 9.15
+
+```{r}
+zoledziai <- ggplot(smegeniukai, aes(vore, fill=vore)) +
+  geom_bar() +
+  ggpubr::rotate_x_text(angle = 60)
+ggpubr::set_palette(zoledziai, palette = "Dark2")
+```
+
+## 9.16
+
+```{r}
+ggpubr::ggpar(
+  zoledziai,
+  legend = "left",
+  legend.title = "Maitinimosi tipas",
+  xlab = "Tipas",
+  ylab = "Skaičius"
+)
+```
+
+## 9.17
+
+```{r}
+set.seed(42)
+smegen <- sample_n(smegeniukai, 20)
+ggplot(smegen, aes(brainwt, bodywt, color=vore, label = name))+
+  geom_point()+
+  scale_y_log10() +
+  scale_x_log10() +
+    geom_text_repel()
+```
+
+## 9.18
+##Ę 9.18.1
+```{r}
+ggplot(smegeniukai, aes(brainwt, bodywt)) +
+  geom_point() +
+  scale_y_log10() +
+  scale_x_log10() +
+    gghighlight(vore == "herbi")
+```
+
+### 9.18.2
+
+```{r}
+ggplot(smegeniukai, aes(brainwt, bodywt)) +
+  geom_point() +
+  scale_y_log10() +
+  scale_x_log10() +
+  gghighlight(sleep_cycle > 0.5)
+```
+
+## 9.19
+
+```{r}
+esquisse::esquisser(smegeniukai)
+```
+```{r}
+esquisse::esquisser(CO2)
+```
+
+
