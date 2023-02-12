@@ -1,0 +1,190 @@
+---
+title: "Kategorijų eilės tvarkos keitimas"
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    df_print:  paged
+    code_folding: show # none show hide
+version:  1.2 # 2021-05-17
+---
+
+
+
+```{r setup, include=FALSE}
+library(conflicted)
+library(magrittr)
+library(tidyverse)
+
+library(rstatix)
+library(ggpubr)
+
+knitr::opts_chunk$set(
+  fig.height = 3, 
+  fig.width  = 7, 
+  fig.align  = "center"
+)
+
+Sys.setlocale(locale = "Lithuanian")
+```
+
+
+
+Kai kurie svarbiausi duomenų parengimo žingsniai buvo aptarti praeitų pratybų metu. Šią savaitę akcentuosime tik vieną aspektą, susijusį su kategoriniais kintamaisiais – kaip pakeisti kategorijų eiliškumą. Keli svarbiausi būdai:
+
+1. Kategorijų išdėliojimas norima tvarka nurodant kategorijų pavadinimus naudojant funkcijas `factor()`{.r} arba `forcats::fct_relevel()`{.r}.
+2. Naudodami `dplyr::recode_factor()`{.r}  galite pakeisti kategorijų pavadinimus ir eiliškumą. Pvz., pirma perkoduojama grupė taps pirma kategorija grafikuose ir suvestinėse. Primenu, kad „R“ įprastai pirmąją grupę laiko kontroline (lyginamąja) grupe.
+3. Naudodami `rstatix::set_ref_level()`{.r} galite pasirinkti kontrolinę/lyginamąją grupę (kategoriją paversti pirmąja).
+4. Naudodami `forcats::fct_reorder()`{.r}, kelias grupes galite *automatiškai* išdėlioti tam tikra tvarka. Pvz., funkcija `fct_reorder(grupe, y, .fun = median, .desc = FALSE)`{.r} kintamojo `grupe` kategorijas (grupes) išdėlioja pagal kintamojo `y` medianas (`.fun = median`) tose grupėse nuo mažiausios iki didžiausios (`.desc = FALSE`; angl. *descending* – mažėjimo tvarka). Naudojimo pavyzdys pateiktas žemiau.
+
+> **Dėmesio!** Jei ataskaitoje norite paslėpti kodą, spauskite „Hide“ mygtuką.
+
+
+# Kategorijų išrikiavimas nurodant pavadinimus
+
+Duomenys (rodomos 6 atsitiktinai parinktos eilutės).
+
+```{r}
+# Demonstraciniai duomenys 1
+data(PlantGrowth, package = "datasets")
+
+set.seed(2)
+sample_n_by(PlantGrowth, size = 6)
+```
+
+Suvestinė:
+```{r}
+summary(PlantGrowth)
+```
+
+Pradinė kategorijų eilės tvarka.
+```{r}
+PlantGrowth %>% ggboxplot(y = "weight", x = "group", add = "jitter") 
+```
+
+Kai nurodoma viena ar kelios kategorijos. 
+Visos kitos bus išdėstytos po nurodytųjų.
+```{r}
+PlantGrowth_2 <- PlantGrowth %>% mutate(group = fct_relevel(group, "trt1", "trt2"))
+
+PlantGrowth_2 %>% ggboxplot(y = "weight", x = "group", add = "jitter", color = "red3") 
+```
+
+Kai pateikiamas vektorius su kategorijomis.
+```{r}
+kategorijos <- c("ctrl", "trt2", "trt1")
+PlantGrowth_3 <- PlantGrowth %>% mutate(group = fct_relevel(group, kategorijos))
+
+PlantGrowth_3 %>% ggboxplot(y = "weight", x = "group", add = "jitter", color = "red3") 
+```
+
+
+# Perrikiavimas perkoduojant
+
+Sulietuvinti pavadinimai ir pakeista pradinė tvarka.
+```{r}
+PlantGrowth_lt <-
+  PlantGrowth %>%
+  mutate(
+    group = recode_factor(group,
+      trt2 = "Terpė_II",
+      trt1 = "Terpė_I",
+      ctrl = "Kontrolė"
+    ))
+
+PlantGrowth_lt %>% 
+  ggboxplot(y = "weight", x = "group", add = "jitter", color = "blue3") 
+```
+
+
+# Kontrolinės grupės parinkimas
+
+Kartais reikia nurodyti tik tai, kuri kategorija turi būti kontrolinė.
+Šį veiksmą galima naudoti ir po automatinio rikiavimo, kuris demonstruojamas kitame skyriuje.
+
+```{r}
+PlantGrowth_lt2 <- 
+  PlantGrowth_lt %>% 
+  set_ref_level("group", ref = "Kontrolė")
+
+PlantGrowth_lt2 %>% 
+  ggboxplot(y = "weight", x = "group", add = "jitter", color = "green3")
+```
+
+Šiam tikslui galėjome naudoti ir `dplyr::recode_factor()`{.r}, bet tam būtų reikėję rašyti daugiau kodo.
+
+
+# Automatinis perrikiavimas pagal 2 kintamuosius
+
+Duomenys (rodomos 6 atsitiktinai parinktos eilutės).
+```{r}
+# Demonstraciniai duomenys 1
+data(chickwts, package = "datasets")
+duomenys_a <- chickwts %>% rename(y = weight, grupe = feed) 
+
+set.seed(1)
+sample_n_by(duomenys_a, size = 6)
+```
+
+Suvestinė:
+```{r}
+summary(duomenys_a)
+```
+
+```{r}
+# Šios eilutės užtikrins, kad spalvos būtų parinktos 
+# pagal kategorijos pavadinimą, o ne kategorijos eilės numerį.
+# Čia: 1-8 – standartinių „R“ spalvų numeriai. Galima rašyti ir, pvz., "red".
+spalvos <- scale_color_manual(values = c("casein" = 1, "horsebean" = 2,
+  "linseed" = 3, "meatmeal" = 4, "soybean" = 5, "sunflower" = 6))
+```
+
+```{r}
+
+duomenys_a %>% 
+  ggboxplot(y = "y", x = "grupe", color = "grupe", add = "jitter", legend = "right") + 
+  ggtitle("Pradinė kategorijų eilės tvarka") +
+  spalvos
+```
+
+
+```{r}
+duomenys_b <- 
+  duomenys_a %>%
+  mutate(grupe = fct_reorder(grupe, y, .fun = median, .desc = FALSE))
+
+duomenys_b %>%
+  ggboxplot(y = "y", x = "grupe", color = "grupe", add = "jitter", legend = "right") +
+  ggtitle("Kategorijos išdėliotos pagal y medianą (didėjančiai)") +
+  spalvos
+```
+
+
+```{r}
+duomenys_c <- 
+  duomenys_a %>%
+  mutate(grupe = fct_reorder(grupe, y, .fun = median, .desc = TRUE))
+
+duomenys_c %>% 
+  ggboxplot(y = "y", x = "grupe", color = "grupe", add = "jitter", legend = "right") +
+  ggtitle("Kategorijos išdėliotos pagal y medianą (mažėjančiai)") +
+  spalvos
+```
+
+
+```{r}
+duomenys_d <- 
+  duomenys_a %>%
+  mutate(grupe = fct_reorder(grupe, y, .fun = IQR))
+
+duomenys_d %>% 
+  ggboxplot(y = "y", x = "grupe", color = "grupe", add = "jitter", legend = "right") +
+  ggtitle("Kategorijos išdėliotos pagal kintamojo y kvartilių skirtumą IQR") +
+  spalvos
+```
+
+Atkreipkite dėmesį į tai, kad paskutiniame grafike grupės išdėliotos pagal sklaidą: pirmos – dėžutės plotis IQR mažiausias, paskutinės – didžiausias.
+
+

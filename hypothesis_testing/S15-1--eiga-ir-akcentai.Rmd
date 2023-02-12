@@ -1,0 +1,51 @@
+---
+title:    "Eiga ir akcentai"
+subtitle: "Padėties lyginimas kelioms nepriklausomoms grupėms"
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+version:  1.3 # 2022-05-10
+---
+
+# Eiga
+
+Rekomenduojama duomenų analizės eiga:
+
+1. **Klausimas** (apsibrėžiamas tikslas, numatoma preliminari sprendimo eiga).
+2. **Duomenys** (įkeliami ir parengiami analizei).
+3. **Analizė** (grafikas → skaitinė suvestinė → prielaidų tikrinimas → pagrindinė analizė → *post-hoc* (patikslinančioji) analizė).
+4. **Aprašymas** (aprašoma, kokia analizė pasirinkta ir jos rezultatai).
+
+Eiga plačiau buvo aptarta ankstesnių pratybų metu.
+
+
+
+# Apie kelių grupių lyginimą
+
+Akcentai šios savaitės užduotims:
+
+A) Tikrindami prielaidas turėkite omenyje, kad mūsų prioritetai (mažėjimo tvarka) renkantis pagrindinį analizės metodą: *(pirmiausia)* ANOVA (dispersinė analizė), po to Welch $F$ (Velčo ANOVA), po to Kruskal-Wallis (Kruskalo-Voliso) kriterijus.  
+**PASTABA:** ANOVA šiame skyriuje bus vartojamas kaip vienfaktorės nepriklausomų imčių ANOVA analizės varianto (apie kurį mokėmės per paskaitas) sinonimas.
+B) Jei netenkinamos normalumo ar lygių dispersijų prielaidos, galima bandyti transformuoti duomenis ir žiūrėti, ar tai padeda (t.y., ar transformuoti duomenys ima tenkinti prielaidas). Pvz., esant dešiniajai asimetrijai gali padėti *logaritmavimas*.
+C) Atlikus pagrindinę analizę:
+    - jei rezultatas statistiškai nereikšmingas, įprastai išsamesnės analizės daryti neverta. Tokiu atveju padaroma išvada, kad statistiškai reikšmingo skirtumo nerasta;
+    - jei rezultatas statistiškai reikšmingas (bent viena grupė reikšmingai skiriasi nuo kažkurios kitos), įprasta tęsti analizę ir atlikti patikslinančius porinius lyginimus (t.y., *post-hoc* analizę).
+D) Atliekant *post-hoc* analizę (jei to reikia), dažniausi porinių lyginimų variantai:
+    - kiekviena grupė lyginama su kiekviena (bus mokoma šio užsiėmimo metu);
+    - kiekviena grupė lyginama tik su kontrole (į šių metų kursą neįtraukta).
+E) CLD tai kompaktiškas būdas užrašyti *post-hoc* analizės rezultatus. 
+Su pasirinktu reikšmingumo lygmeniu (tarkime, α = 0,05), tarp grupių, kurios pažymėtos **ta pačia CLD raide**, skirtumai **nėra** statistiškai **reikšmingi**.
+F) Jei skirtumai tarp grupių nėra statiškai reikšmingi, **susilaikykite** nuo teiginių, kad „Šita grupė didžiausia (geriausia, efektyviausia, mažiausio svorio ar pan.)“. Geriau sakyti, pvz., „Nepaisant to, kad grupės D vidurkio **įvertis** (M = 33) buvo didžiausias, tačiau skirtumai tarp grupės D ir grupių A (M = 31, $d^*$ = 0,02, $p$ = 0,880) bei C (M = 39, $d^*$ = 0,45, $p$ = 0,131) buvo statistiškai nereikšmingi.“ (Čia M -- vidurkis, $d^*$ -- standartizuotasis efekto dydis).
+
+<!-- 
+G) Prielaidas galime tikrinti pagal pradinius duomenis (kaip darėme ankstesnių užsiėmimų metu) ir pagal ANOVA modelio paklaidas. Svarbiau, kad normalumo prielaida būtų tenkinama paklaidoms.  
+**PASTABA:** prielaidų tikrinimas pagal paklaidas iš šių metų kurso yra išimtas.
+-->
+
+> **SVARBU:** pasirinkite tik **vieną** labiausiai tinkantį pagrindinės analizės metodą ir tik **vieną** labiausiai tinkantį su pagrindine analize suderinamą *post-hoc* analizės metodą.
+
+
+

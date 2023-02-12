@@ -1,0 +1,302 @@
+---
+title:    "Pavyzdys „Augalų augimas“"
+subtitle: "S15-3 (rezultatų aprašymo pavyzdys)"
+date:  "`r Sys.Date()`" # Bus įrašyta automatiškai, nekeisti
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    code_folding: hide
+    toc: yes
+    toc_float: yes
+    df_print:  paged
+version:  1.3 # 2022-05-22
+---
+
+
+# Uždavinys
+
+Įvertinkite, kokią įtaką augalo augimui daro skirtingos auginimo sąlygos.
+Tirtas augalo svoris gramais keliuose poveikio pogrupiuose.
+
+
+Pastaba: uždavinys su duomenimis „PlantGrowth“ taip pat nagrinėjamas šioje svetainėje:
+https://www.datanovia.com/en/lessons/anova-in-r/ 
+
+
+<details>
+<summary>**Techninė pastaba -- 1.** </summary>
+
+Pagal nutylėjimą programos kodas HTML byloje yra paslėptas.
+Jį galite pamatyti paspaudę atitinkamą mygtuką.
+
+***
+
+</details>
+
+
+<details>
+<summary>**Techninė pastaba -- 2.** </summary>
+
+Jei vykdydami kodą išvysite tokią (ar analogišką) klaidos žinutę, vadinasi rastos kelios funkcijos vienodu pavadinimu:
+
+```
+Error:
+! [conflicted] `cohens_d` found in 2 packages.
+Either pick the one you want with `::` 
+* effectsize::cohens_d
+* rstatix::cohens_d
+Or declare a preference with `conflict_prefer()`
+* conflict_prefer("cohens_d", "effectsize")
+* conflict_prefer("cohens_d", "rstatix")
+```
+
+Tokiu atveju rekomenduojama setup bloke įrašyti reikiamą eilutę, pvz.,
+
+```
+conflict_prefer("cohens_d", "rstatix")
+```
+
+Arba naudoti sintaksę `rstatix::cohens_d()`{.r} (o ne vien `cohens_d()`{.r}).
+
+***
+
+</details>
+
+
+# Sprendimas
+
+
+```{r setup, warning=FALSE, message=FALSE, results='hide'}
+# Paketai --------------------------------------------------------------------
+library(conflicted)
+library(tidyverse)
+
+# Grafikams
+library(ggpubr)
+
+# Statistinei analizei
+library(DescTools)
+library(rstatix)
+library(PMCMRplus)
+library(effectsize)
+
+# Nustatymai -----------------------------------------------------------------
+knitr::opts_chunk$set(
+  eval       = TRUE,
+  fig.height = 3, 
+  fig.width  = 7, 
+  fig.align  = "center"
+)
+
+# Jei naudojate R ≥ 4.2.0, tai lokalės keisti nebūtina
+# (t.y., su lokalės keitimu susijusias 5 eilutes galite ištrinti)
+if (getRversion() < "4.2.0" && tolower(Sys.info()[['sysname']]) == "windows") {
+  Sys.setlocale(locale = "Lithuanian")    # Windows ir R < 4.2.0
+} else {
+  Sys.setlocale(locale = "lt_LT.UTF-8")   # Linux, Mac arba R ≥ 4.2.0
+}
+
+ggplot2::theme_set(ggplot2::theme_bw())
+
+conflict_prefer("cohens_d", "rstatix")
+
+# === Papildomos funkcijos ===================================================
+# Jūsų projekte turi būti byla "funkcijos/sudaryk_cld.R"
+source("funkcijos/sudaryk_cld.R", encoding = "UTF-8")
+```
+
+
+
+## Duomenys
+
+```{r eval=FALSE}
+# Duomenų dokumentacija
+help("PlantGrowth", package = "datasets")
+```
+
+Duomenų įkėlimas ir pertvarkymas, kad pavadinimai atitiktų šablone naudojamus (t.y., kad nebereiktų modifikuoti kitur). Papildomai pakeičiami grupių pavadinimai (to daryti nebūtina).
+```{r}
+data("PlantGrowth", package = "datasets")
+
+duomenys <-
+  PlantGrowth %>%
+  rename(y = weight, grupe = group) %>%
+
+  mutate(grupe = recode_factor(
+    grupe,
+    ctrl = "Kontrolė",
+    trt1 = "Terpė I",
+    trt2 = "Terpė II")
+  )
+```
+
+```{r}
+glimpse(duomenys)
+```
+
+<!-- ====================================================================== -->
+
+## Suvestinės ir prielaidų tikrinimas 
+
+<!-- ---------------------------------------------------------------------- -->
+
+### Duomenų  suvestinės pagal klausimą
+
+
+Pirmiausia atkreipkite dėmesį į aprašomosios statistikos rezultatus:
+
+- duomenų centrus (skirtumus tarp grupių padėties),
+- sklaidą (ir sklaidos skirtumus tarp grupių), 
+- imties dydžius (absoliučiuosius grupių dydžius ir ar jie subalansuoti, ar grupės vienodo dydžio).
+
+Aprašomoji statistika pogrupiams:
+
+```{r, paged.print=FALSE}
+Desc(y ~ grupe, data = duomenys, verbose = 3, plotit = FALSE)
+```
+Grafikai pogrupiams:
+
+```{r fig.height=4, fig.width=8}
+par(las = 2) # Pasuka užrašus bazinės „R“ sistemos (bet ne ggplot2) grafikuose
+plot(Desc(y ~ grupe, data = duomenys))
+```
+
+Jei reikia papildomų grafikų:
+
+```{r}
+duomenys %>% ggdensity("y", color = "grupe", rug = TRUE)
+```
+
+```{r}
+duomenys %>% ggboxplot(y = "y", x = "grupe", color = "grupe", add = "jitter")
+```
+
+Šiame grafike matoma konkrečių taškų padėtis.
+
+<!-- ... -->
+
+Yra trys grupės, daugmaž simetriški grupių skirtiniai (ir grafiškai, ir pagal asimetrijos koeficientus), vizualiai dėžučių pločiai skiriasi nedaug, padėtis šiek tiek skiriasi (dėžutės skirtingame aukštyje), grupės nedidelės (n = 10), todėl neaišku, ar skirtumai reikšmingi. Grupių dydžiai subalansuoti, tad tai suteikia atsparumo ANOVA prielaidų pažeidimams. 
+
+
+<!-- ====================================================================== -->
+
+<!-- ---------------------------------------------------------------------- -->
+
+### Prielaidų tikrinimas
+
+_Šiai analizei prielaidas tikrinau būdais, kurių nesimokėme šio kurso metu. Tad sakykime, kad normalumo ir lygių dispersijų prielaidos tenkinamos. Galbūt, jei tikrintumėte patys mūsų kurso metu nagrinėtais būdais, priimtumėte kitokią išvadą. Tad šį pavyzdį priimkite labiau ne kaip metodo pasirinkimo pavyzdį, o kaip ANOVA ir Tukey HSD metodais gautų rezultatų aprašymo iliustraciją._
+
+***
+
+Renkamės klasikinį ANOVA metodą.
+
+<!-- ---------------------------------------------------------------------- -->
+
+
+## Pagrindinė analizė ANOVA **[A]**
+
+Klasikinės dispersinės analizės variantas.
+Prielaidos ir reikalavimai:
+
+- tiriamieji tarpusavyje nepriklausomi,
+- kelios nepriklausomos grupės,
+- normaliai pasiskirsčiusios grupės (arba paklaidos),
+- grupių dispersijos daugmaž vienodo dydžio.
+
+
+Įprastai normalumo ir lygių dispersijų prielaidas galima patikrinti tik pakankamai didelėms imtims.
+
+
+```{r}
+anova_rez <- duomenys %>% anova_test(y ~ grupe, detailed = TRUE)
+anova_rez # `ges` yra η² („generalized eta squared“, η²)
+```
+
+```{r}
+get_test_label(anova_rez, type = "text", detailed = TRUE)
+```
+
+Skirtumas tarp grupių (tik neaišku, tarp kurių) statistiškai reikšmingas. Todėl analizę tęsime atlikdami porinius lyginimus. Bet prieš tai apskaičiuosime bendrąjį efekto dydį.
+
+
+```{r}
+with(anova_rez, effectsize::F_to_omega2(f = F, df = DFn, df_error = DFd, ci = .95))
+```
+
+Tik atkreipkite dėmesį, kad ω² = 0,20 95% PI 0–0,44 (t.y., neigiamo skaičiaus būti negali). O žodis „partial“ turi prasmę, kai yra keli kategoriniai kintamieji (to mūsų kurse nesimokome).
+
+
+<!-- ---------------------------------------------------------------------- -->
+
+### *Post-hoc:* Tukey HSD kriterijus **[a]** 
+
+**Tukey HSD** (Tukio pakankamai reikšmingo skirtumo) kriterijus yra tinkamas atlikti klasikinės **ANOVA** analizės *post-hoc* analizę (porinius palyginimus).
+
+Tinka, kai:
+
+- tenkinama normalumo prielaida;
+- tenkinama lygių dispersijų prielaida;
+- visų grupių dydžiai (daugmaž) vienodi;
+- norima palyginti kiekvieną grupę su kiekviena.
+
+
+
+**Reikšmingumo tikrinimas.**
+
+```{r}
+# Lygina kiekvieną grupę su kiekviena
+# Pastaba: dabartinės „rstatix“ versijos (0.5.0) Tukio HSD analizės funkcija 
+# ignoruoja parametro `conf.level` reikšmę, tad skaičiuojamas tik 95 % PI.
+tukey_test_rez <- duomenys %>% tukey_hsd(y ~ grupe, conf.level = 0.95, detailed = TRUE)
+tukey_test_rez
+```
+
+```{r}
+# pwc      -- (pair-wise comparisons) porinių lyginimų metodas
+# p.adjust -- p reikšmių korekcijos metodas
+get_pwc_label(tukey_test_rez, type = "text")
+```
+
+**CLD.**
+
+```{r}
+# Funkcija nukopijuota iš skyriaus „Papildomos funkcijos“
+# Pastaba: rezultatas bus neteisingas, jei grupių pavadinimuose yra „-“ ženklas
+sudaryk_cld(tukey_test_rez, alpha = 0.05)
+```
+
+Matome, kad reikšmingai skiriasi tik Terpė I ir Terpė II (su α = 0,05).
+
+
+**Efekto dydis poroms.**
+
+```{r}
+# Koreguotasis Hedžo g* (su Hedžo pataisa)
+efekto_dydis_poroms_g <- 
+  duomenys %>% 
+  cohens_d(y ~ grupe, var.equal = TRUE, hedges.correction = TRUE) %>% 
+  arrange(desc(abs(effsize))) # Išrikiuoja eilutes pagal efekto dydį
+
+efekto_dydis_poroms_g
+```
+
+Nors skirtumas tarp Kontrolės ir Terpės II statistiškai nereikšmingas, bet efekto dydis ganėtinai didelis. Tokia situacija gali reikšti, kad statistiniam reikšmingumui pasiekti reiktų šiek tiek didesnės imties (kai apsiskaičiuoti reikiamo imties dydžio – nesimokėme).
+
+
+<!-- ---------------------------------------------------------------------- -->
+
+# Atsakymas
+
+
+Tyrimo metu vertinta, ar augalų augimas skiriasi taikant skirtingą poveikį. Vertinta sausa augalo masė¹ gramais augalams taikant 3 skirtingus poveikius: kontrolines sąlygas „Kontrolė“ (n = 10, M = 4,66 g, SD = 0,79 g), pirmąjį poveikį „Terpė I“ (n = 10, M = 5,03 g, SD = 0,58 g) bei antrąjį poveikį „Terpė II“ (n = 10, M = 5,53 g, SD = 0,44 g). Taikyta vienfaktorė dispersinė analizė (ANOVA) atskleidė, kad skirtumai tarp grupių yra statistiškai reikšmingi, $F$(2; 27) = 4,85, $p$ = 0,016, ω² = 0,20, n = 30. Poriniai *post-hoc* lyginimai Tukio metodu atskleidė, kad skirtumas buvo reikšmingas tik tarp grupių „Terpė I“ ir „Terpė II“ (0,87 g, 95% PI [0,17 -- 1,56] g, $p^*$ = 0,012, $g^*$ = 1,28). O tarp „Kontrolė“ ir „Terpė II“ (0,49 g, 95% PI [-0,19 -- 1,18] g, $p^*$ = 0,198, $g^*$ = 0,91) bei „Kontrolė“ ir „Terpė I“ (-0,37 g, 95% PI [-1,06 -- 0,32] g, $p^*$ = 0,391, $g^*$ = 0,51) statistiškai nereikšmingi. Tyrimo metu naudotas reikšmingumo lygmuo α = 0,05.
+ 
+Žymėjimai: n -- imties dydis, M -- vidurkis, SD -- standartinis nuokrypis, efekto dydžiai ω² (grupių skirtumais paaiškintos dispersijos dalis) ir $g^*$ (Koreguotasis Hedžo $g^*$ -- skirtumas standartiniais nuokrypiais), $p^*$ -- Tukio metodu koreguotoji $p$ reikšmė, PI -- pasikliautinasis intervalas.
+ 
+¹ -- sausos augalo masės matavimo vienetai duomenų aprašyme nenurodyti, bet sakykime, kad tai gramai.
+
+
+***
+
+**Pastaba:** didelis efekto dydis ($g^*$ = 0,91) leidžia manyti, kad surinkus didesnę imtį būtų pasiektas statistinis reikšmingumas. Šitoje vietoje tiktų atlikti reikiamo imties dydžio skaičiavimus (apie tai nesimokėme).
+

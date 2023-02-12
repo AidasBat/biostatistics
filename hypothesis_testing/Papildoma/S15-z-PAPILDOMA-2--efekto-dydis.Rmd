@@ -1,0 +1,164 @@
+---
+title:    "Pastabos apie efekto dydžių skaičiavimą"
+subtitle: "(Papildoma potemė)"
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+version:  1.2 # 2021-05-17
+---
+
+```{r setup, include=FALSE}
+# Paketai
+library(conflicted)
+library(magrittr)
+library(tidyverse)
+library(rstatix)
+
+# Duomenys
+data(PlantGrowth, package = "datasets")
+```
+
+> **Pastaba!** Tai *papildoma* potemė, kurioje aprašomos η² ir ω² efekto dydžio formulių dalys ir paaiškinama, kodėl tam pačiam dalykui įvertinti naudojamos skirtingos formulės.
+> Jei norite, šią dalį galite praleisti.
+
+# ANOVA modelio sudarymas ir η²
+
+Tai ANOVA analizę atliekanti funkcija.
+Ji automatiškai apskaičiuoja efekto dydžio įvertį η² (eta kvadratu; stulpelis `ges`: „generalized eta squared“).
+
+Sudarykime modelį:
+```{r message=FALSE}
+anova_rez <- PlantGrowth %>% anova_test(weight ~ group, detailed = TRUE)
+anova_rez 
+```
+
+
+Rezultatai glausčiau:
+
+```{r}
+get_test_label(anova_rez, type = "text", detailed = TRUE)
+```
+
+Koeficiento η² apibrėžimas:
+
+$$\eta^2 = \frac{SS_n}{SS_n + SS_d}$$
+
+$SS_n + SS_d$ yra visa modelio kvadratų suma (SS – *sum of squares*), $SS_n$ – kvadratų suma, atsiradusi dėl grupių skirtumo, $SS_d$ – kvadratų suma grupių viduje, indeksai $_n$ skaitiklis (angl. *numerator*), $_d$ – vardiklis (angl. *denominator*). Kvadratų suma atitinka dispersiją. Tad η² nurodo, kuri dispersijos dalis yra paaiškinama grupių skirtumais. Skaičiuojant iš duomenų, šio koeficiento reikšmė yra paslinkta į didesnių reikšmių pusę. Ypač, kai imties dydis nedidelis. Todėl dažnai naudojamas mažiau paslinktasis įvertis ω² (omega kvadratu).
+
+
+
+# Efekto dydis ω²
+
+Tikrasis ω² apibrėžimas yra toks:
+
+$$\omega^2 = \frac{SS_n - (k - 1) \cdot MS_d}{SS_n + SS_d + MS_d}$$
+
+Čia:
+
+- $SS_n$ -- kvadratų suma tarp grupių,
+- $SS_d$ -- kvadratų suma grupių viduje,
+- $N$ -- bendras imties dydis,
+- $k$ -- grupių skaičius,
+- $df_n$ -- skaitiklio laisvės laipsnių skaičius ($df_n = k - 1$),
+- $df_d$ -- vardiklio laisvės laipsnių skaičius ($df_d = N - k$),
+- $MS_n = \frac{SS_n}{df_n}$ -- dispersija tarp grupių,
+- $MS_d = \frac{SS_d}{df_d}$ -- dispersija grupių viduje,
+- $F = \frac{MS_n}{MS_d}$ -- ANOVA analizės kriterijaus statistika.
+
+
+
+<!-- Formulės pilnai suprasti nebūtina, nes taip giliai nesimokėme per teoriją. -->
+
+Objektas `anova_rez`, kurį sukūrė „R“, duomenis saugo įvairius tarpinius skaičiavimų rezultatus.
+Jei reikia detalių, panagrinėkite funkcijų `names(anova_rez)`{.r}, `View(anova_rez)`{.r}, `unclass(anova_rez)`{.r} rezultatus.
+Pvz.:
+```{r}
+names(anova_rez)
+```
+
+O štai, kaip ω² skaičiavimai atliekami pagal kvadratų sumas ir laisvės laipsnius, saugomus objekte `anova_rez`:
+
+```{r}
+with(anova_rez, {
+  MSd = SSd/DFd
+  c(omega_kvadratu = (SSn - DFn * MSd)/(SSn + SSd + MSd))
+})
+```
+
+
+
+
+Deja, ne visada turime priėjimą prie visų tarpinių skaičiavimų rezultatų, todėl ir naudojame išvestines formules. Jomis gauti rezultatai yra **tik apytiksliai**.
+
+Tarkime, žinant tik ANOVA analizės kriterijaus statistikos $F$ ir laisvės laipsnių reikšmes (neturint kvadratų sumų), ω² galima įvertinti pagal formulę:
+
+$$\omega^2 = \frac{(F - 1) \cdot df_n}{F \cdot df_n + df_d  + 1}$$
+O skaičiavimus pagal šią formulę atlieka funkcija `effectsize::F_to_omega2()`{.r}:
+
+```{r}
+with(anova_rez, effectsize::F_to_omega2(f = F, df = DFn, df_error = DFd, ci = .95))
+```
+
+Apsiskaičiuoti galime ir patys (atrodo, skiriasi tik 5-tas skaičius po kablelio, kai mus domina tik pirmieji du).
+
+
+```{r}
+# names(anova_rez)
+with(anova_rez, {
+  c(omega_kvadratu = unname((F - 1) * DFn / (F * DFn + DFd + 1)))
+})
+```
+
+
+Formulę galima pertvarkyti taip, kad ω² būtų galima skaičiuoti pagal $F$ statistiką, vardiklio laisvės laipsnius ir bendrą imties dydį $N$. Klasikinės ANOVA atveju $N = df_n + df_d + 1$.
+
+$$\omega^2 = \frac{(F - 1) \cdot df_n}{(F - 1) \cdot df_n + N}$$
+Skaičiavimai:
+
+```{r}
+with(anova_rez, {
+  N = DFn + DFd + 1
+  c(omega_kvadratu = unname((F - 1) * DFn / ((F - 1) * DFn + N)))
+})
+```
+
+Pastarosios dvi formulės (kuriose naudojama $F$ statistika) yra apytikslės.
+Tačiau klasikiniu ANOVA atveju rezultatai turi gautis beveik identiški.
+
+> Skaičiuojant bet kuriuo iš sių būdu, klasikinės ANOVA atveju gautas ω² įvertis turi sutapti pakankamu tikslumu.
+
+
+# Welch ANOVA ir ω²
+
+
+Welch ANOVA analizę galima apskaičiuoti žemiau pateikta funkcija, tačiau tarp rezultatų nėra efekto dydžio įverčio.
+
+```{r}
+w_anova_rez <- PlantGrowth %>% welch_anova_test(weight ~ group) 
+w_anova_rez
+```
+
+```{r}
+get_test_label(w_anova_rez, type = "text", detailed = TRUE)
+```
+
+
+Metodas naudojamas, kai netenkinama lygių dispersijų prielaida. Todėl tarpiniai skaičiavimai atliekami kitaip. Ryškiausias skirtumas – *koreguoti* trupmeniniu skaičiumi užrašomi vardiklio laisves laipsniai (todėl jų nereiktų naudoti efekto dydžio skaičiavimui). Taip pat šiek tiek kitoks $F$ reikšmės dydis.
+Tad efekto dydį galime įvertinti tik **apytiksliai** naudodami paskutinę praeito poskyrio formulę:
+
+
+
+```{r}
+with(w_anova_rez, {
+  F = statistic
+  c(omega_kvadratu_apytikslis = unname((F - 1) * DFn / ((F - 1) * DFn + n)))
+})
+```
+
+Kaip matome, gavome didesnę koeficiento reikšmę, nei klasikinės ANOVA atveju. Tačiau **tikrasis efekto dydis nepakito** – tik metodas hipotezėms tikrinti kitas. Todėl tokiu būdu įvertintą koeficientą reiktų žymėti šiek tiek kitaip, pvz., $\omega^2_{Welch~F}$, aiškiai nurodyti, kaip jis skaičiuotas (pvz., pateikiant formulę), kokios galimos problemos dėl tokio skaičiavimo. Analogiškai skaičiuoti moko [šiame laboratoriniame darbe](http://oak.ucc.nau.edu/rh232/courses/EPS625/Handouts/One-Way%20ANOVA/ANOVA%20-%20Example%20-%20Welch%20and%20G-H%20-%20Key.pdf), tačiau patikimo informacijos šaltinio, kurį galėtumėte pacituoti, nurodyti negaliu.
+
+Atlikdami *post-hoc* porinius lyginimus, galime skaičiuoti d tipo efekto dydį (*Cohen's d\**).
+
