@@ -1,0 +1,13 @@
+
+Duomenų byla: `BK-toksinas.xlsx`  
+
+Sudarykite 3 regresijos modelius kalibravimui: po atskirą modelį kiekvienam toksinui atskirai.
+Patikrinkite modeliams keliamus reikalavimus.
+Naudodami **`ggplot2`** paketo funkcijas, visų toksinų duomenis ir juos geriausiai atitinkančias regresijos tieses skirtingomis spalvomis nubraižykite viename grafike (iš viso turite panaudoti 3 skirtingas spalvas).
+
+Analizės rezultatus aprašykite.
+
+Padarykite preliminarią išvadą, kuris toksinas yra pavojingiausias (taip pat pasibrėžkite, ką reiškia „pavojingiausias“), ir pagrįskite, kodėl taip manote. Preliminarią, nes nesimokėme lyginti, ar skirtumai tarp modelių yra statistiškai reikšmingi.
+
+(P.S. Šitie duomenys surinkti VU GMC yra 2020 m. rašyto bakalaurinio darbo dalis.
+Šioje užduotyje naudojami su duomenų savininko sutikimu.)

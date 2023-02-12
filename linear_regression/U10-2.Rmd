@@ -1,0 +1,109 @@
+
+Duomenų byla: `kalibracijai_2.dat`  
+
+Sudarykite tiesinės regresijos modelį kalibracijai.
+Patikrinkite modeliui keliamus reikalavimus.
+Rezultatus nubraižykite grafiškai ir aprašykite.
+
+# Sprendimas
+```{r setup, message=FALSE, results='hide'}
+library(tidyverse)
+library(magrittr)
+
+library(readxl)
+library(chemCal)
+
+# Chunk options
+knitr::opts_chunk$set(
+  echo       = TRUE,    # Should blocks with program code be shown in knitted documents?
+  eval       = TRUE,    # Should program code be evaluated?
+  fig.height = 3,       # Default height for plots.
+  fig.width  = 5,       # Default width for plots.
+  fig.align  = "center" # Default alignment for plots in knitted documents.
+)
+```
+
+## Duomenų įkėlimas, peržiūra ir suvestinė
+
+```{r}
+kalibracija2 <- read.table("duomenys/kalibracijai_2.dat", skip = 1)
+```
+
+```{r}
+kalibracija <- 
+  kalibracija2 %>% 
+  set_names(c("koncentracija", "sugertis"))
+
+glimpse(kalibracija)
+```
+
+```{r}
+summary(kalibracija)
+```
+
+
+Grafikas - sklaidos diagrama.
+```{r fig.height=4}
+
+plot(sugertis ~ koncentracija, data = kalibracija)
+```
+
+## Modeliavimas
+
+## Modelio sudarymas
+
+Sudarome tokios formos lygtį: $Y = a + bX$, t. y., $sugertis = a + b \times koncentracija$.
+```{r}
+modelis2 <- lm(sugertis ~ koncentracija, data = kalibracija)
+```
+
+### Modelio braižymas
+
+```{r fig.height=3.5, fig.width=7}
+# Kalibracijos kreivė:
+chemCal::calplot(modelis2, xlab = "koncentracija", ylab = "sugertis")
+```
+
+### Modelio parametrų peržiūra
+
+```{r}
+summary(modelis2)
+```
+
+Gauname $sugertis = -0{,}0122 + 0{,}00802 × koncentracija$, $R^2 = 0{,}997$.
+
+### Prielaidų tikrinimas
+
+```{r fig.height=5, fig.width=5}
+op <- par(mfrow = c(2, 2))
+plot(modelis2)
+```
+
+### Modelio taikymas
+
+```{r}
+nauja_reiksme <- 0.46
+
+rez <- chemCal::inverse.predict(modelis2, newdata = nauja_reiksme)
+
+rez %>% map(scales::number, accuracy = 0.1) %>% unlist() %>% t() %>% as_tibble()
+```
+
+# Atsakymas
+
+Sudarytas tiesinės regresijos modelis $sugertis = -0{,}0122 + 0{,}00802 × koncentracija$, $R^2 = 0{,}997$. Modeliui keliamos prielaidos buvo tenkinamos. Pagal šį modelį nustatyta, kad mėgintuvėlyje, kuriame esančio tirpalo sugertis yra 0,46, medžiagos koncentracija buvo 2804,5 (95% PI 2566,5–3042,4) ug/L. Rezultatai grafiškai atvaizduoti pav. 1.
+
+```{r pav-1, echo=TRUE, fig.cap=caption}
+caption <- paste0("**Pav 1.** Sklaidos diagrama su regresijos tiese (mėlyna).")
+
+ggplot(kalibracija, aes(x = koncentracija, y = sugertis)) +
+
+  # Duomenys ir modelis
+  geom_smooth(method = lm, formula = y ~ x, se = FALSE) +
+  geom_point(alpha = 0.5) +
+  
+  # Grafiko apipavidalinimas
+  scale_x_continuous(n.breaks = 7) +
+  scale_y_continuous(n.breaks = 6) +
+  labs(x = "Koncentracija, ug/L")
+```

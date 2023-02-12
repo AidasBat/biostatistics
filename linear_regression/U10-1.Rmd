@@ -1,0 +1,146 @@
+---
+title: "Tiesinės regresijos modelis kalbiracijai"
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+---
+```{css, echo=FALSE}
+details {
+  background-color: #f0fff4;
+  border-color:     #dddddd;
+  border-style:     solid;
+  border-width:     1px;
+}
+```
+# Užduotis
+
+Sudarykite tiesinės regresijos modelį kalibracijai.
+Patikrinkite modeliui keliamus reikalavimus.
+Rezultatus nubraižykite grafiškai ir aprašykite.
+
+Duomenų byla: `kalibracijai_1.csv`
+
+# Sprendimas
+```{r setup, message=FALSE, results='hide'}
+library(tidyverse)
+library(magrittr)
+
+library(readxl)
+library(chemCal)
+
+# Chunk options
+knitr::opts_chunk$set(
+  echo       = TRUE,    # Should blocks with program code be shown in knitted documents?
+  eval       = TRUE,    # Should program code be evaluated?
+  fig.height = 3,       # Default height for plots.
+  fig.width  = 5,       # Default width for plots.
+  fig.align  = "center" # Default alignment for plots in knitted documents.
+)
+```
+
+## Duomenų įkėlimas, peržiūra ir suvestinė
+
+```{r}
+kalibracija1 <- read.table("duomenys/kalibracijai_1.csv", sep=',', header=TRUE)
+```
+
+```{r}
+kalibracija <- 
+  kalibracija1 %>% 
+  set_names(c("signalas", "koncentracija"))
+
+glimpse(kalibracija)
+```
+
+```{r}
+summary(kalibracija)
+```
+
+
+Grafikas - sklaidos diagrama.
+```{r fig.height=4}
+
+plot(signalas ~ koncentracija, data = kalibracija)
+```
+
+## Modeliavimas
+
+## Modelio sudarymas
+
+Sudarome tokios formos lygtį: $Y = a + bX$, t. y., $signalas = a + b \times koncentracija$.
+```{r}
+modelis <- lm(signalas ~ koncentracija, data = kalibracija)
+```
+
+### Modelio braižymas
+
+```{r fig.height=3.5, fig.width=7}
+# Kalibracijos kreivė:
+chemCal::calplot(modelis, xlab = "Koncentracija", ylab = "signalas")
+```
+
+### Modelio parametrų peržiūra
+
+```{r}
+summary(modelis)
+```
+
+Gauname $signalas = 2{,}315 + 1{,}732 × koncentracija$, $R^2 = 0{,}997$.
+
+### Prielaidų tikrinimas
+
+The diagnostic plots show residuals in four different ways:
+
+Residuals vs Fitted. Used to check the linear relationship assumptions. A
+horizontal line, without distinct patterns is an indication for a linear
+relationship, what is good.
+
+Normal Q-Q. Used to examine whether the residuals are normally distributed.
+It’s good if residuals points follow the straight dashed line.
+
+Scale-Location (or Spread-Location). Used to check the homogeneity of variance
+of the residuals (homoscedasticity). Horizontal line with equally spread points
+is a good indication of homoscedasticity. This is not the case in our example,
+where we have a heteroscedasticity problem.
+
+Residuals vs Leverage. Used to identify influential cases, that is extreme
+values that might influence the regression results when included or excluded
+from the analysis. This plot will be described further in the next sections.
+
+```{r fig.height=5, fig.width=5}
+op <- par(mfrow = c(2, 2))
+plot(modelis)
+```
+
+### Modelio taikymas
+
+```{r}
+nauja_reiksme <- 150
+
+rez <- chemCal::inverse.predict(modelis, newdata = nauja_reiksme)
+
+rez %>% map(scales::number, accuracy = 0.1) %>% unlist() %>% t() %>% as_tibble()
+```
+
+# Atsakymas
+
+Sudarytas tiesinės regresijos modelis $signalas = 2{,}315 + 1{,}732 × koncentracija$, $R^2 = 0{,}997$. Modeliui keliamos prielaidos buvo tenkinamos. Pagal šį modelį nustatyta, kad esant 150 signalo intensyvumui, medžiagos koncentracija yra 5,1 (95% PI 4,5–5,8) ug/L. Rezultatai grafiškai atvaizduoti pav. 1.
+
+```{r pav-1, echo=TRUE, fig.cap=caption}
+caption <- paste0("**Pav 1.** Sklaidos diagrama su regresijos tiese (mėlyna). ")
+
+ggplot(kalibracija, aes(x = koncentracija, y = signalas)) +
+
+  # Duomenys ir modelis
+  geom_smooth(method = lm, formula = y ~ x, se = FALSE) +
+  geom_point(alpha = 0.5) +
+  
+  # Grafiko apipavidalinimas
+  scale_x_continuous(n.breaks = 7) +
+  scale_y_continuous(n.breaks = 6) +
+  labs(x = "Koncentracija, ug/L")
+```

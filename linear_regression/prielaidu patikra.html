@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Linear Regression Assumptions and Diagnostics in R: Essentials - Articles - STHDA</title>
+<meta charset="UTF-8" />
+<meta name="generator" content="PHPBoost" />
+<link rel="canonical" href="http://www.sthda.com/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:image" content="http://www.sthda.com/english/logo_200px_fb_sharing.png">
+        <meta property="og:image:type" content="image/png">
+        <meta property="og:image:alt" content="STHDA Logo">
+        <meta property="og:description" content="Statistical tools for data analysis and visualization">
+        
+<link rel="stylesheet" href="/english/cache/css/sthda/css-cache-79b066d50842bc196d6b6bdbb35611f4.css" type="text/css" media="screen, print" />
+<link rel="stylesheet" href="/english/cache/css/sthda/css-cache-1f8319396ecc51cb8e03f74122b51f4f.css" type="text/css" media="screen, print" />
+<link rel="shortcut icon" href="/english/logo.png" type="image/png" />
+<link rel="stylesheet" href="/english/templates/sthda/ak/knitr.rcode.style.css"/>
+<link rel="stylesheet" href="/english/templates/sthda/ak/style.blue.css"/>
+<link rel="stylesheet" href="/english/templates/sthda/ak/youtube.embed.light.css"/>
+<script type="text/javascript" src= "/english/templates/sthda/ak/youtube.embed.light.js"></script>
+ 
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+</head>
+<body itemscope="itemscope" itemtype="http://schema.org/WebPage">
+<header id="header">
+<div id="top-header">
+<div id="site-infos">
+<div id="site-logo" style="background-image: url(/english/images/customization/all_sthda-logo.png);"></div>
+<div id="site-name-container">
+<a id="site-name" href="/english/">STHDA</a>
+<!--=================AK================-->
+<span style="font-size:12px;">
+                    
+                    <a href="http://www.sthda.com/french" style="color:white;"> 
+                            <img src="/english/images/stats/countries/fr.png" class="valign_middle" style="width:15px;"/></a> 
+                    <a href="http://www.sthda.com/english" style="color:white;">
+                        <img src="/english/images/stats/countries/uk.png" class="valign_middle" style="width:15px;"/></a>
+                </span>
+                <!--================End AK==============-->
+<span id="site-slogan">Statistical tools for high-throughput data analysis</span>
+</div>
+</div>
+<div id="top-header-content">
+<div class="block-container">
+<div class="block-contents">
+<div>
+Licence: <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/" target="_blank"><img alt="Licence Creative Commons" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/3.0/fr/88x31.png" /></a>
+</div>
+</div>
+</div>
+<div id="module-mini-search">
+<form action="/english/search/search.php#results" onsubmit="return check_search_mini_form_post();" method="post">
+<div id="mini-search-form" class="input-element-button">
+<input type="search" id="TxTMiniSearched" title="Your search" name="q" value="" placeholder="Search...">
+<input type="hidden" id="search-token" name="token" value="cd99023e3b133bce">
+<button type="submit" name="search_submit"><i class="fa fa-search"></i></button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<div id="sub-header">
+<div id="sub-header-content">
+ 
+ 
+<nav id="cssmenu-1764" class="cssmenu cssmenu-horizontal cssmenu-with-submenu">
+<a href="/english/wiki/r-software" title="Link to page R & Data Mining" class="cssmenu-img cssmenu-img-level-0">
+</a>
+<ul class="level-0"> 
+<li>
+<a href="/english/" title="Link to page Home" class="cssmenu-title">Home</a>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="/english/wiki/r-basics-quick-and-easy" title="Link to page Basics" class="cssmenu-title">Basics</a>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/wiki/what-is-r-and-why-learning-r-programming" title="Link to page What's R and Why R?" class="cssmenu-title">What's R and Why R?</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/installing-r-and-rstudio-easy-r-programming" title="Link to page Installing R/RStudio" class="cssmenu-title">Installing R/RStudio</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/running-rstudio-and-setting-up-your-working-directory-easy-r-programming" title="Link to page Running R/RStudio" class="cssmenu-title">Running R/RStudio</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/easy-r-programming-basics" title="Link to page R Programming Basics" class="cssmenu-title">R Programming Basics</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/getting-help-with-functions-in-r-programming" title="Link to page Getting Help" class="cssmenu-title">Getting Help</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/installing-and-using-r-packages" title="Link to page Installing R Packages" class="cssmenu-title">Installing R Packages</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/r-built-in-data-sets" title="Link to page R Built-in data sets" class="cssmenu-title">R Built-in data sets</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<span class="cssmenu-title">Data</span>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/wiki/importing-data-into-r" title="Link to page Import" class="cssmenu-title">Import</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/exporting-data-from-r" title="Link to page Export" class="cssmenu-title">Export</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/preparing-and-reshaping-data-in-r-for-easier-analyses" title="Link to page Reshape" class="cssmenu-title">Reshape</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/data-manipulation-in-r" title="Link to page Manipulate" class="cssmenu-title">Manipulate</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="/english/wiki/data-visualization" title="Link to page Visualize" class="cssmenu-title">Visualize</a>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/articles/32-r-graphics-essentials/" title="Link to page R Graphics Essentials" class="cssmenu-title">R Graphics Essentials</a>
+</li>
+ 
+<li>
+<a href="/english/articles/24-ggpubr-publication-ready-plots/" title="Link to page Easy Publication Ready Plots" class="cssmenu-title">Easy Publication Ready Plots</a>
+</li>
+ 
+<li>
+<a href="/english/articles/33-social-network-analysis/" title="Link to page Network Analysis and Visualization" class="cssmenu-title">Network Analysis and Visualization</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/ggplot2-essentials" title="Link to page GGplot2" class="cssmenu-title">GGplot2</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/r-base-graphs" title="Link to page R Base Graphs" class="cssmenu-title">R Base Graphs</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/lattice-graphs" title="Link to page Lattice Graphs" class="cssmenu-title">Lattice Graphs</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/3d-graphics" title="Link to page 3D Graphics" class="cssmenu-title">3D Graphics</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/the-elements-of-choosing-colors-for-great-data-visualization-in-r" title="Link to page How to Choose Great Colors?" class="cssmenu-title">How to Choose Great Colors?</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<span class="cssmenu-title">Analyze</span>
+ 
+<ul class="level-1"> 
+ 
+<li class="has-sub" >
+<a href="/english/wiki/r-basic-statistics" title="Link to page Statistics" class="cssmenu-title">Statistics</a>
+ 
+<ul class="level-2"> 
+<li>
+<a href="/english/wiki/descriptive-statistics-and-graphics" title="Link to page Descriptive Statistics and Graphics" class="cssmenu-title">Descriptive Statistics and Graphics</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/normality-test-in-r" title="Link to page Normality Test in R" class="cssmenu-title">Normality Test in R</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/statistical-tests-and-assumptions" title="Link to page Statistical Tests and Assumptions" class="cssmenu-title">Statistical Tests and Assumptions</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/correlation-analyses-in-r" title="Link to page Correlation Analysis" class="cssmenu-title">Correlation Analysis</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/comparing-means-in-r" title="Link to page Comparing Means" class="cssmenu-title">Comparing Means</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/comparing-variances-in-r" title="Link to page Comparing Variances" class="cssmenu-title">Comparing Variances</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/comparing-proportions-in-r" title="Link to page Comparing Proportions" class="cssmenu-title">Comparing Proportions</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="/english/wiki/survival-analysis" title="Link to page Survival" class="cssmenu-title">Survival</a>
+ 
+<ul class="level-2"> 
+<li>
+<a href="/english/wiki/survival-analysis-basics" title="Link to page Survival Analysis Basics" class="cssmenu-title">Survival Analysis Basics</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/cox-proportional-hazards-model" title="Link to page Cox Proportional Hazards Model" class="cssmenu-title">Cox Proportional Hazards Model</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/cox-model-assumptions" title="Link to page Cox Model Assumptions" class="cssmenu-title">Cox Model Assumptions</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="/english/articles/25-cluster-analysis-in-r-practical-guide/" title="Link to page Clustering" class="cssmenu-title">Clustering</a>
+ 
+<ul class="level-2"> 
+<li>
+<a href="/english/articles/26-clustering-basics/" title="Link to page Clustering basics" class="cssmenu-title">Clustering basics</a>
+</li>
+ 
+<li>
+<a href="/english/articles/27-partitioning-clustering-essentials/" title="Link to page Partitioning clustering" class="cssmenu-title">Partitioning clustering</a>
+</li>
+ 
+<li>
+<a href="/english/articles/28-hierarchical-clustering-essentials/" title="Link to page Hierarchical clustering" class="cssmenu-title">Hierarchical clustering</a>
+</li>
+ 
+<li>
+<a href="/english/articles/29-cluster-validation-essentials/" title="Link to page Clustering Evaluation & Validation" class="cssmenu-title">Clustering Evaluation & Validation</a>
+</li>
+ 
+<li>
+<a href="/english/articles/30-advanced-clustering/" title="Link to page Advanced clustering" class="cssmenu-title">Advanced clustering</a>
+</li>
+ 
+<li>
+<a href="/english/articles/25-cluster-analysis-in-r-practical-guide/108-clustering-example-4-steps-you-should-know/" title="Link to page Quick Guide for Cluster Analysis" class="cssmenu-title">Quick Guide for Cluster Analysis</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/beautiful-dendrogram-visualizations-in-r-5-must-known-methods-unsupervised-machine-learning" title="Link to page Visualize Dendrograms: 5+ methods" class="cssmenu-title">Visualize Dendrograms: 5+ methods</a>
+</li>
+</ul>
+</li>
+ 
+<li>
+<a href="/english/articles/31-principal-component-methods-in-r-practical-guide/" title="Link to page Principal Component Methods" class="cssmenu-title">Principal Component Methods</a>
+</li>
+ 
+<li>
+<a href="/english/articles/11-machine-learning/" title="Link to page Machine Learning Essentials" class="cssmenu-title">Machine Learning Essentials</a>
+</li>
+</ul>
+</li>
+ 
+<li>
+<a href="https://www.datanovia.com/en/data-science-and-online-business-resources/" title="Link to page Resources" class="cssmenu-title">Resources</a>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="https://www.datanovia.com/en/data-science-and-online-business-resources/" title="Link to page Our Products" class="cssmenu-title">Our Products</a>
+ 
+<ul class="level-1"> 
+<li>
+<a href="https://www.datanovia.com/en/data-science-and-online-business-resources/" title="Link to page Books" class="cssmenu-title">Books</a>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="https://rpkgs.datanovia.com/" title="Link to page R Packages" class="cssmenu-title">R Packages</a>
+ 
+<ul class="level-2"> 
+<li>
+<a href="/english/wiki/factoextra-r-package-easy-multivariate-data-analyses-and-elegant-visualization" title="Link to page factoextra" class="cssmenu-title">factoextra</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/survminer-r-package-survival-data-analysis-and-visualization" title="Link to page survminer" class="cssmenu-title">survminer</a>
+</li>
+ 
+<li>
+<a href="/english/articles/24-ggpubr-publication-ready-plots/" title="Link to page ggpubr" class="cssmenu-title">ggpubr</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/ggcorrplot-visualization-of-a-correlation-matrix-using-ggplot2" title="Link to page ggcorrplot" class="cssmenu-title">ggcorrplot</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/fastqcr-an-r-package-facilitating-quality-controls-of-sequencing-data-for-large-numbers-of-samples" title="Link to page fastqcr" class="cssmenu-title">fastqcr</a>
+</li>
+</ul>
+</li>
+ 
+<li>
+<a href="/english/rsthda" title="Link to page Web App" class="cssmenu-title">Web App</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<span class="cssmenu-title">Support</span>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/forum" title="Link to page Forum" class="cssmenu-title">Forum</a>
+</li>
+ 
+<li>
+<a href="/english/contact" title="Link to page Contact" class="cssmenu-title">Contact</a>
+</li>
+</ul>
+</li>
+ 
+<li>
+<a href="http://www.alboukadel.com/" title="Link to page About" class="cssmenu-title">About</a>
+</li>
+</ul>
+</nav>
+</div>
+<div class="spacer"></div>
+</div>
+<div class="spacer"></div>
+</header>
+<div id="global">
+<aside id="menu-left">
+<div id="module-connect" class="connect-menu not-connected module-mini-container vertical">
+<div class="module-mini-top">
+<div class="sub-title">Sign in</div>
+</div>
+<div class="module-mini-contents connect-contents">
+<div class="connect-containers">
+<div class="connect-input-container vertical-fieldset" >
+<form action="/english/user/login/" method="post" onsubmit="return check_connect();" class="form-element">
+<label for="login">
+<span>Login</span>
+<input type="text" id="login" name="login" title="Login" placeholder="Login">
+</label>
+<label for="password">
+<span>Password</span>
+<input type="password" id="password" name="password" title="Password" placeholder="Password">
+</label>
+<label for="autoconnect">
+<span>Auto connect</span>
+<input checked="checked" type="checkbox" id="autoconnect" name="autoconnect" title="Auto connect">
+</label>
+<input type="hidden" name="redirect" value="/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/?fbclid=IwAR2BvtMNni72ABKLeVeLiUz6_xQMub4E_1fdiCenaB69kUowruTrbKKwFcc">
+<input type="hidden" name="token" value="cd99023e3b133bce">
+<button type="submit" name="authenticate" value="internal" class="submit">Sign in</button>
+</form>
+</div>
+<div class="connect-register-container">
+<a class="connect-register small" href="/english/user/registration/">
+<i class="fa fa-ticket"></i><span>Register</span>
+</a>
+<a class="social-connect fb" href="/english/user/login/?authenticate=fb">
+<i class="fa fa-facebook"></i><span>Sign in with Facebook</span>
+</a>
+</div>
+<div class="forget-pass-container">
+<a class="forgot-pass small" href="/english/user/password/lost/">
+<i class="fa fa-question-circle"></i><span>Forgotten password</span>
+</a>
+</div>
+</div>
+</div>
+<div class="module-mini-bottom">
+</div> 
+</div>
+<div class="module-mini-container">
+<div class="module-mini-top">
+<div class="sub-title">Welcome!</div>
+</div>
+<div class="module-mini-contents">
+<span style="color:#FC4E07;">Want to Learn More on R Programming and Data Science?</span><br>
+Follow us <a href="https://feedburner.google.com/fb/a/mailverify?uri=datanovia&loc=en_US">by Email</a>
+<form style="border: 1px solid #2E9FDF;padding:3px;text-align:center; border-left: 6px solid #2E9FDF;" action="https://feedburner.google.com/fb/a/mailverify" method="post" target="popupwindow" onsubmit="window.open('https://feedburner.google.com/fb/a/mailverify?uri=datanovia', 'popupwindow', 'scrollbars=yes,width=550,height=520');return true"><p><input type="text" style="width:140px" name="email"/></p><input type="hidden" value="datanovia" name="uri"/><input type="hidden" name="loc" value="en_US"/><input type="submit" value="Subscribe" /><p>by <a href="https://feedburner.google.com" target="_blank">FeedBurner</a></p></form>
+<br/>
+<div class="addthis_inline_follow_toolbox"></div>
+<div>
+    <br/>
+    <span style="color:#FC4E07;"><a href="https://www.datanovia.com/en/data-science-and-online-business-resources/" target="_blank">Click to see our collection of resources to help you on your path...</a></span>
+    <br/>
+</div>
+<!--
+<br/>
+<span style="color:#FC4E07;">Recommended Courses for You</span><br><br/>
+<ul>
+<li><a href="https://www.datanovia.com/en/zwf6" target="_blank">How to Become a Machine Learning Engineer</a></li>
+    
+<li><a href="https://www.datanovia.com/en/09iy" target="_blank">
+Learn AI Programming with Python</a></li>
+    
+<li><a href="https://www.datanovia.com/en/ynw5" target="_blank" rel="nofollow">
+Programming for Data Science with Python</a></li>
+    
+<li><a href="https://www.datanovia.com/en/tgy4" target="_blank" rel="nofollow">
+Programming for Data Science with R</a></li>
+    
+<li><a href="https://www.datanovia.com/en/7787" target="_blank" rel="nofollow">
+Become a Data Engineer</a></li>
+    
+<li><a href="https://www.datanovia.com/en/2obq">Become a Deep-Learning Engineer</a></li>
+</ul>
+<br/>
+<div>
+<a class="dt-sc-button  small filled"  style="color:#FC4E07;" href="https://www.datanovia.com/en/data-science-and-online-business-resources/" target="_blank">See More Resources</a>
+</div>
+-->
+</div>
+<div class="module-mini-bottom">
+</div>
+</div>
+<div class="module-mini-container">
+<div class="module-mini-top">
+<div class="sub-title">Course & Specialization</div>
+</div>
+<div class="module-mini-contents">
+<div style="text-align:left;">
+<br/>
+<span style="color:#FC4E07;">Recommended for You (on Coursera):</span>
+<ul>
+<li><a href="https://www.datanovia.com/en/xkkk" target="_blank" rel="nofollow">Course: Machine Learning: Master the Fundamentals</a></li>
+    
+<li><a href="https://www.datanovia.com/en/e85g" target="_blank" rel="nofollow">
+Specialization: Data Science</a></li>
+    
+<li><a href="https://www.datanovia.com/en/xepy" target="_blank" rel="nofollow">
+Specialization: Python for Everybody</a></li>
+    
+<li><a href="https://www.datanovia.com/en/mm6m" target="_blank" rel="nofollow">
+Course: Build Skills for a Top Job in any Industry</a></li>
+    
+<li><a href="https://www.datanovia.com/en/xxae" target="_blank" rel="nofollow">
+Specialization: Master Machine Learning Fundamentals</a></li>
+    
+<li><a href="https://www.datanovia.com/en/2j0s" target="_blank" rel="nofollow">Specialization: Statistics with R</a></li>
+    
+<li><a href="https://www.datanovia.com/en/ih09" target="_blank" rel="nofollow">Specialization: Software Development in R</a></li>
+    
+<li><a href="https://www.datanovia.com/en/sprm" target="_blank" rel="nofollow">Specialization: Genomic Data Science</a></li>
+</ul>
+<br/><br/>
+<div>
+<a class="dt-sc-button  small filled" href="https://www.datanovia.com/en/data-science-and-online-business-resources/">See More Resources</a>
+</div>
+</div>
+</div>
+<div class="module-mini-bottom">
+</div>
+</div>
+<div class="module-mini-container">
+<div class="module-mini-top">
+</div>
+<div class="module-mini-contents">
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                    
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-5474463749888038"
+                         data-ad-slot="4712884969"
+                         data-ad-format="link"></ins>
+                    
+</div>
+<div class="module-mini-bottom">
+</div>
+</div>
+ 
+ 
+ 
+<div class="module-mini-container">
+<div class="module-mini-top menu-vertical-0 hidden-small-screens">
+<a href="/english/wiki/r-packages" title="Link to page R Packages" class="cssmenu-title sub-title">
+R Packages</a>
+</div>
+<div class="module-mini-contents">
+<nav id="cssmenu-1825" class="cssmenu cssmenu-vertical cssmenu-left cssmenu-with-submenu">
+<ul class="level-0"> 
+ 
+<li class="has-sub" >
+<a href="/english/wiki/factoextra-r-package-easy-multivariate-data-analyses-and-elegant-visualization" title="Link to page factoextra" class="cssmenu-title"><img src="/english/wiki/wiki_mini.png" alt="factoextra" height="16" width="16" /> factoextra</a>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/wiki/factoextra-r-package-easy-multivariate-data-analyses-and-elegant-visualization" title="Link to page Overview" class="cssmenu-title">Overview</a>
+</li>
+ 
+<li>
+<a href="/english/rpkgs/factoextra" title="Link to page Official Doc" class="cssmenu-title">Official Doc</a>
+</li>
+ 
+ 
+<li class="has-sub" >
+<span class="cssmenu-title">Related Tutorials</span>
+ 
+<ul class="level-2"> 
+<li>
+<a href="/english/wiki/cluster-analysis-in-r-unsupervised-machine-learning" title="Link to page Cluster Analysis" class="cssmenu-title">Cluster Analysis</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/factor-analysis" title="Link to page Principal Component Methods" class="cssmenu-title">Principal Component Methods</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="/english/wiki/survminer-r-package-survival-data-analysis-and-visualization" title="Link to page survminer" class="cssmenu-title"><img src="/english/wiki/wiki_mini.png" alt="survminer" height="16" width="16" /> survminer</a>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/wiki/survminer-r-package-survival-data-analysis-and-visualization" title="Link to page Overview" class="cssmenu-title">Overview</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/survminer-cheatsheet-to-create-easily-survival-plots" title="Link to page Cheatsheet" class="cssmenu-title">Cheatsheet</a>
+</li>
+ 
+<li>
+<a href="/english/rpkgs/survminer" title="Link to page Official Doc" class="cssmenu-title">Official Doc</a>
+</li>
+ 
+ 
+<li class="has-sub" >
+<span class="cssmenu-title">Related Tutorials</span>
+ 
+<ul class="level-2"> 
+<li>
+<a href="/english/wiki/survival-analysis" title="Link to page Survival Analysis" class="cssmenu-title">Survival Analysis</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<span class="cssmenu-title">Release Posts</span>
+ 
+<ul class="level-2"> 
+<li>
+<a href="/english/wiki/survminer-0-3-0" title="Link to page v0.3.0" class="cssmenu-title">v0.3.0</a>
+</li>
+ 
+<li>
+<a href="/english/wiki/survminer-0-2-4" title="Link to page v0.2.4" class="cssmenu-title">v0.2.4</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="/english/articles/24-ggpubr-publication-ready-plots/" title="Link to page ggpubr" class="cssmenu-title"><img src="/english/wiki/wiki_mini.png" alt="ggpubr" height="16" width="16" /> ggpubr</a>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/articles/24-ggpubr-publication-ready-plots/" title="Link to page Overview" class="cssmenu-title">Overview</a>
+</li>
+ 
+<li>
+<a href="/english/rpkgs/ggpubr/" title="Link to page Official Doc" class="cssmenu-title">Official Doc</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="/english/wiki/ggcorrplot-visualization-of-a-correlation-matrix-using-ggplot2" title="Link to page ggcorrplot" class="cssmenu-title"><img src="/english/wiki/wiki_mini.png" alt="ggcorrplot" height="16" width="16" /> ggcorrplot</a>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/wiki/ggcorrplot-visualization-of-a-correlation-matrix-using-ggplot2" title="Link to page Overview" class="cssmenu-title">Overview</a>
+</li>
+</ul>
+</li>
+ 
+ 
+<li class="has-sub" >
+<a href="/english/wiki/fastqcr-an-r-package-facilitating-quality-controls-of-sequencing-data-for-large-numbers-of-samples" title="Link to page fastqcr" class="cssmenu-title"><img src="/english/wiki/wiki_mini.png" alt="fastqcr" height="16" width="16" /> fastqcr</a>
+ 
+<ul class="level-1"> 
+<li>
+<a href="/english/wiki/fastqcr-an-r-package-facilitating-quality-controls-of-sequencing-data-for-large-numbers-of-samples" title="Link to page Overview" class="cssmenu-title">Overview</a>
+</li>
+ 
+<li>
+<a href="/english/rpkgs/fastqcr/" title="Link to page Official Doc" class="cssmenu-title">Official Doc</a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+ 
+</div>
+<div class="module-mini-bottom"></div>
+</div>
+<div class="module-mini-container">
+<div class="module-mini-top">
+</div>
+<div class="module-mini-contents">
+ <div>
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-5474463749888038"
+       data-ad-slot="8944608168"
+       data-ad-format="vertical"></ins>
+  
+</div>
+</div>
+<div class="module-mini-bottom">
+</div>
+</div>
+<div class="module-mini-container">
+<div class="module-mini-top">
+<div class="sub-title">Our Books</div>
+</div>
+<div class="module-mini-contents">
+   
+<div class = "small-block content-privileged-friends" style = "width:98%;">
+          <center>
+            <a href = "http://www.sthda.com/english/web/5-bookadvisor/52-r-graphics-essentials-for-great-data-visualization-200-practical-examples-you-want-to-know-for-data-science/" >
+              <img src = "http://www.sthda.com/english/upload/r-graphics-essentials-cookbook-200.png" /><br/>
+  R Graphics Essentials for Great Data Visualization: 200 Practical Examples You Want to Know for Data Science
+  </a>
+  <p class = "star-new"><i class="fa fa-star"></i> NEW!!</p>
+  </center>
+</div>
+<br/>
+<div class = "small-block" style = "width:98%">
+          <center>
+            <a href = "http://www.sthda.com/english/web/5-bookadvisor/17-practical-guide-to-cluster-analysis-in-r/" >
+              <img src = "http://www.sthda.com/english/upload/practical-guide-to-cluster-analysis-in-r.jpg" /><br/>
+          Practical Guide to Cluster Analysis in R
+      </a>
+      </center>
+</div>
+ 
+<br/>
+<div class = "small-block" style = "width:98%;">
+          <center>
+            <a href = "http://www.sthda.com/english/web/5-bookadvisor/50-practical-guide-to-principal-component-methods-in-r/" >
+              <img src = "http://www.sthda.com/english/sthda-upload/images/principal-component-methods-cover-200px.png" width = "100px", height="125px;" /><br/>
+  Practical Guide to Principal Component Methods in R
+  </a>
+  </center>
+</div>
+<br/>
+<br/><br/>
+<div style = "">
+    <a href="/english/download/3-ebooks/6-complete-guide-to-3d-plots-in-r/" target ="_blank">
+        <b>3D Plots in R</b> <br/><br/>
+        <img src="http://www.sthda.com/sthda/RDoc/images/3d-graphic-cover.png"  style = "width:180px"/>
+    </a>
+</div>
+</div>
+<div class="module-mini-bottom">
+</div>
+</div>
+ 
+ 
+ 
+<div class="module-mini-container">
+<div class="module-mini-top menu-vertical-0 hidden-small-screens">
+Blogroll
+</div>
+<div class="module-mini-contents">
+<nav id="cssmenu-1849" class="cssmenu cssmenu-vertical cssmenu-left">
+<ul class="level-0"> 
+<li>
+<a href="https://www.datanovia.com/en/" title="Link to page Datanovia: Online Data Science Courses" class="cssmenu-title"><img src="/english/web/web_mini.png" alt="Datanovia: Online Data Science Courses" height="16" width="16" /> Datanovia: Online Data Science Courses</a>
+</li>
+ 
+<li>
+<a href="https://www.r-bloggers.com/" title="Link to page R-Bloggers" class="cssmenu-title"><img src="/english/web/web_mini.png" alt="R-Bloggers" height="16" width="16" /> R-Bloggers</a>
+</li>
+</ul>
+</nav>
+ 
+</div>
+<div class="module-mini-bottom"></div>
+</div>
+</aside>
+<div id="main" class="main-with-left" role="main">
+<div id="main-content" itemprop="mainContentOfPage">
+<nav id="breadcrumb" itemprop="breadcrumb">
+<ol>
+<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+<a href="/english/" itemprop="url">
+<span itemprop="title">Home</span>
+</a>
+</li>
+<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" >
+<a href="/english/articles/" itemprop="url">
+<span itemprop="title">Articles</span>
+</a>
+</li>
+<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" >
+<a href="/english/articles/11-machine-learning/" itemprop="url">
+<span itemprop="title">Machine Learning</span>
+</a>
+</li>
+<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb" >
+<a href="/english/articles/39-regression-model-diagnostics/" itemprop="url">
+<span itemprop="title">Regression Model Diagnostics</span>
+</a>
+</li>
+<li itemscope itemtype="http://data-vocabulary.org/Breadcrumb"  class="current" >
+<a href="/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/" itemprop="url">
+<span itemprop="title">Linear Regression Assumptions and Diagnostics in R: Essentials</span>
+</a>
+</li>
+</ol>
+</nav>
+<section id="module-articles">
+<header>
+<div>
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-5474463749888038"
+     data-ad-slot="2200070562"
+     data-ad-format="auto"></ins>
+<br/><br/>
+</div>
+<h1>
+<a href="/english/syndication/rss/articles/39" title="Syndication"><i class="fa fa-syndication"></i></a>
+Articles - Regression Model Diagnostics 
+</h1>
+</header>
+<div class="content">
+<article itemscope="itemscope" itemtype="http://schema.org/Article" id="article-articles-161" class="article-articles">
+<header>
+<h2>
+<span itemprop="name">Linear Regression Assumptions and Diagnostics in R: Essentials</span>
+<span class="actions">
+</span>
+</h2>
+<div class="more">
+<i class="fa fa-user" title="Author"></i>
+<a itemprop="author" href="/english/user/profile/1" class="admin" >&nbsp;kassambara&nbsp;</a>|&nbsp;
+<i class="fa fa-calendar" title="Date"></i>&nbsp;<time datetime="2018-03-11T12:20:00+01:00" itemprop="datePublished">11/03/2018</time>&nbsp;|
+&nbsp;<i class="fa fa-eye" title="287003 Views"></i>&nbsp;<span title="287003 Views">287003</span>
+&nbsp;|&nbsp;<i class="fa fa-comment" title="Comments"></i><a itemprop="discussionUrl" class="small" href="/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/#comments-list">&nbsp;Comments (7)</a>
+&nbsp;|&nbsp;<i class="fa fa-folder" title="Category"></i>&nbsp;<a itemprop="about" class="small" href="/english/articles/39-regression-model-diagnostics/">Regression Model Diagnostics</a>
+</div>
+<meta itemprop="url" content="/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/">
+<meta itemprop="description" content="
+  
+Linear regression (Chapter @ref(linear-regression)) makes several assumptions about the data at hand. This chapter describes regression assumptions and provides built-in plots for regression">
+<meta itemprop="datePublished" content="2018-03-11T12:20:00+01:00">
+<meta itemprop="discussionUrl" content="/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/#comments-list">
+<meta itemprop="thumbnailUrl" content="/english/upload/linear-regression-assumptions-and-diagnostics-in-r.png">
+<meta itemprop="interactionCount" content="7 UserComments">
+</header>
+<div class="content">
+<div itemprop="text">
+  <div id="rdoc">
+<p>Linear regression (Chapter @ref(linear-regression)) makes several assumptions about the data at hand. This chapter describes <strong>regression assumptions</strong> and provides built-in plots for <strong>regression diagnostics</strong> in R programming language.</p>
+<p>After performing a regression analysis, you should always check if the model works well for the data at hand.</p>
+<p>A first step of this regression diagnostic is to inspect the significance of the regression beta coefficients, as well as, the R2 that tells us how well the linear regression model fits to the data. This has been described in the Chapters @ref(linear-regression) and @ref(cross-validation).</p>
+<p>In this current chapter, you will learn additional steps to evaluate how well the model fits the data.</p>
+<p>For example, the linear regression model makes the assumption that the relationship between the predictors (x) and the outcome variable is linear. This might not be true. The relationship could be polynomial or logarithmic.</p>
+<p>Additionally, the data might contain some influential observations, such as outliers (or extreme values), that can affect the result of the regression.</p>
+<p>Therefore, you should closely diagnostic the regression model that you built in order to detect potential problems and to check whether the assumptions made by the linear regression model are met or not.</p>
+<p>To do so, we generally examine the distribution of <strong>residuals errors</strong>, that can tell you more about your data.</p>
+<p>In this chapter,</p>
+<ul>
+<li>we start by explaining <strong>residuals errors</strong> and <strong>fitted values</strong>.</li>
+<li>next, we present linear <strong>regresion assumptions</strong>, as well as, potential problems you can face when performing regression analysis.</li>
+<li>finally, we describe some built-in <strong>diagnostic plots</strong> in R for testing the assumptions underlying linear regression model.</li>
+</ul>
+<p>Contents:</p>
+<div id="TOC">
+<ul>
+<li><a href="#loading-required-r-packages">Loading Required R packages</a></li>
+<li><a href="#example-of-data">Example of data</a></li>
+<li><a href="#building-a-regression-model">Building a regression model</a></li>
+<li><a href="#fitted-values-and-residuals">Fitted values and residuals</a></li>
+<li><a href="#regression-assumptions">Regression assumptions</a></li>
+<li><a href="#regression-diagnostics-reg-diag">Regression diagnostics {reg-diag}</a><ul>
+<li><a href="#diagnostic-plots">Diagnostic plots</a></li>
+</ul></li>
+<li><a href="#linearity-of-the-data">Linearity of the data</a></li>
+<li><a href="#homogeneity-of-variance">Homogeneity of variance</a></li>
+<li><a href="#normality-of-residuals">Normality of residuals</a></li>
+<li><a href="#outliers-and-high-levarage-points">Outliers and high levarage points</a></li>
+<li><a href="#influential-values">Influential values</a></li>
+<li><a href="#discussion">Discussion</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+<br/>
+<div class = "small-block content-privileged-friends navr-book">
+  <p>The Book:</p>
+        <a href = "http://www.sthda.com/english/web/5-bookadvisor/54-machine-learning-essentials/">
+          <img src = "http://www.sthda.com/english/upload/machine-learning-essentials-frontcover-200px.png" /><br/>
+     Machine Learning Essentials: Practical Guide in R
+      </a>
+</div>
+<div class="spacer"></div>
+<div id="loading-required-r-packages" class="section level2">
+<h2>Loading Required R packages</h2>
+<ul>
+<li><code>tidyverse</code> for easy data manipulation and visualization</li>
+<li><code>broom</code>: creates a tidy data frame from statistical test results</li>
+</ul>
+<pre class="r"><code>library(tidyverse)
+library(broom)
+theme_set(theme_classic())</code></pre>
+</div>
+<div id="example-of-data" class="section level2">
+<h2>Example of data</h2>
+<p>We’ll use the data set <code>marketing</code> [datarium package], introduced in Chapter @ref(regression-analysis).</p>
+<pre class="r"><code># Load the data
+data("marketing", package = "datarium")
+# Inspect the data
+sample_n(marketing, 3)</code></pre>
+<pre><code>##     youtube facebook newspaper sales
+## 58    163.4     23.0      19.9  15.8
+## 157   112.7     52.2      60.6  18.4
+## 81     91.7     32.0      26.8  14.2</code></pre>
+</div>
+<div id="building-a-regression-model" class="section level2">
+<h2>Building a regression model</h2>
+<p>We build a model to predict sales on the basis of advertising budget spent in youtube medias.</p>
+<pre class="r"><code>model <- lm(sales ~ youtube, data = marketing)
+model</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = sales ~ youtube, data = marketing)
+## 
+## Coefficients:
+## (Intercept)      youtube  
+##      8.4391       0.0475</code></pre>
+<p>Our regression equation is: <code>y = 8.43 + 0.07*x</code>, that is <code>sales = 8.43 + 0.047*youtube</code>.</p>
+<p>Before, describing regression assumptions and regression diagnostics, we start by explaining two key concepts in regression analysis: Fitted values and residuals errors. These are important for understanding the diagnostic plots presented hereafter.</p>
+</div>
+<div id="fitted-values-and-residuals" class="section level2">
+<h2>Fitted values and residuals</h2>
+<p>The <strong>fitted</strong> (or <strong>predicted</strong>) values are the y-values that you would expect for the given x-values according to the built regression model (or visually, the best-fitting straight regression line).</p>
+<p>In our example, for a given youtube advertising budget, the fitted (predicted) sales value would be, <code>sales =  8.44 + 0.0048*youtube</code>.</p>
+<p>From the scatter plot below, it can be seen that not all the data points fall exactly on the estimated regression line. This means that, for a given youtube advertising budget, the observed (or measured) sale values can be different from the predicted sale values. The difference is called the <strong>residual errors</strong>, represented by a vertical red lines.</p>
+<p><img src="http://www.sthda.com/english/sthda-upload/images/machine-learning-essentials/linear-regression.png" alt="Linear regression" /></p>
+<p>In R, you can easily augment your data to add fitted values and residuals by using the function <code>augment()</code> [broom package]. Let’s call the output <code>model.diag.metrics</code> because it contains several metrics useful for regression diagnostics. We’ll describe theme later.</p>
+<pre class="r"><code>model.diag.metrics <- augment(model)
+head(model.diag.metrics)</code></pre>
+<pre><code>##   sales youtube .fitted .se.fit .resid    .hat .sigma  .cooksd .std.resid
+## 1 26.52   276.1   21.56   0.385  4.955 0.00970   3.90 7.94e-03     1.2733
+## 2 12.48    53.4   10.98   0.431  1.502 0.01217   3.92 9.20e-04     0.3866
+## 3 11.16    20.6    9.42   0.502  1.740 0.01649   3.92 1.69e-03     0.4486
+## 4 22.20   181.8   17.08   0.277  5.119 0.00501   3.90 4.34e-03     1.3123
+## 5 15.48   217.0   18.75   0.297 -3.273 0.00578   3.91 2.05e-03    -0.8393
+## 6  8.64    10.4    8.94   0.525 -0.295 0.01805   3.92 5.34e-05    -0.0762</code></pre>
+<p>Among the table columns, there are:</p>
+<ul>
+<li><code>youtube</code>: the invested youtube advertising budget</li>
+<li><code>sales</code>: the observed sale values</li>
+<li><code>.fitted</code>: the fitted sale values</li>
+<li><code>.resid</code>: the residual errors</li>
+<li>…</li>
+</ul>
+<p>The following R code plots the residuals error (in red color) between observed values and the fitted regression line. Each vertical red segments represents the residual error between an observed sale value and the corresponding predicted (i.e. fitted) value.</p>
+<pre class="r"><code>ggplot(model.diag.metrics, aes(youtube, sales)) +
+  geom_point() +
+  stat_smooth(method = lm, se = FALSE) +
+  geom_segment(aes(xend = youtube, yend = .fitted), color = "red", size = 0.3)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-residual-error-1.png" width="384" /></p>
+<div class="block">
+<p>
+In order to check regression assumptions, we’ll examine the distribution of residuals.
+</p>
+</div>
+</div>
+<div id="regression-assumptions" class="section level2">
+<h2>Regression assumptions</h2>
+<p>Linear regression makes several assumptions about the data, such as :</p>
+<ol style="list-style-type: decimal">
+<li><strong>Linearity of the data</strong>. The relationship between the predictor (x) and the outcome (y) is assumed to be linear.</li>
+<li><strong>Normality of residuals</strong>. The residual errors are assumed to be normally distributed.</li>
+<li><strong>Homogeneity of residuals variance</strong>. The residuals are assumed to have a constant variance (<strong>homoscedasticity</strong>)</li>
+<li><strong>Independence of residuals error terms</strong>.</li>
+</ol>
+<p>You should check whether or not these assumptions hold true. Potential problems include:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Non-linearity</strong> of the outcome - predictor relationships</li>
+<li><strong>Heteroscedasticity</strong>: Non-constant variance of error terms.</li>
+<li><strong>Presence of influential values</strong> in the data that can be:
+<ul>
+<li>Outliers: extreme values in the outcome (y) variable</li>
+<li>High-leverage points: extreme values in the predictors (x) variable</li>
+</ul></li>
+</ol>
+<p>All these assumptions and potential problems can be checked by producing some diagnostic plots visualizing the residual errors.</p>
+</div>
+<div id="regression-diagnostics-reg-diag" class="section level2">
+<h2>Regression diagnostics {reg-diag}</h2>
+<div id="diagnostic-plots" class="section level3">
+<h3>Diagnostic plots</h3>
+<p>Regression diagnostics plots can be created using the R base function <code>plot()</code> or the <code>autoplot()</code> function [ggfortify package], which creates a ggplot2-based graphics.</p>
+<ul>
+<li>Create the diagnostic plots with the R base function:</li>
+</ul>
+<pre class="r"><code>par(mfrow = c(2, 2))
+plot(model)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-diagnostic-plots-1.png" width="672" /></p>
+<ul>
+<li>Create the diagnostic plots using ggfortify:</li>
+</ul>
+<pre class="r"><code>library(ggfortify)
+autoplot(model)</code></pre>
+<p>The diagnostic plots show residuals in four different ways:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Residuals vs Fitted</strong>. Used to check the linear relationship assumptions. A horizontal line, without distinct patterns is an indication for a linear relationship, what is good.</p></li>
+<li><p><strong>Normal Q-Q</strong>. Used to examine whether the residuals are normally distributed. It’s good if residuals points follow the straight dashed line.</p></li>
+<li><p><strong>Scale-Location</strong> (or Spread-Location). Used to check the homogeneity of variance of the residuals (homoscedasticity). Horizontal line with equally spread points is a good indication of homoscedasticity. This is not the case in our example, where we have a heteroscedasticity problem.</p></li>
+<li><p><strong>Residuals vs Leverage</strong>. Used to identify influential cases, that is extreme values that might influence the regression results when included or excluded from the analysis. This plot will be described further in the next sections.</p></li>
+</ol>
+<p>The four plots show the top 3 most extreme data points labeled with with the row numbers of the data in the data set. They might be potentially problematic. You might want to take a close look at them individually to check if there is anything special for the subject or if it could be simply data entry errors. We’ll discuss about this in the following sections.</p>
+<p>The metrics used to create the above plots are available in the <code>model.diag.metrics</code> data, described in the previous section.</p>
+<pre class="r"><code># Add observations indices and
+# drop some columns (.se.fit, .sigma) for simplification
+model.diag.metrics <- model.diag.metrics %>%
+  mutate(index = 1:nrow(model.diag.metrics)) %>%
+  select(index, everything(), -.se.fit, -.sigma)
+# Inspect the data
+head(model.diag.metrics, 4)</code></pre>
+<pre><code>##   index sales youtube .fitted .resid    .hat .cooksd .std.resid
+## 1     1  26.5   276.1   21.56   4.96 0.00970 0.00794      1.273
+## 2     2  12.5    53.4   10.98   1.50 0.01217 0.00092      0.387
+## 3     3  11.2    20.6    9.42   1.74 0.01649 0.00169      0.449
+## 4     4  22.2   181.8   17.08   5.12 0.00501 0.00434      1.312</code></pre>
+<p>We’ll use mainly the following columns:</p>
+<ul>
+<li><code>.fitted</code>: fitted values</li>
+<li><code>.resid</code>: residual errors</li>
+<li><code>.hat</code>: hat values, used to detect high-leverage points (or extreme values in the predictors x variables)</li>
+<li><code>.std.resid</code>: standardized residuals, which is the residuals divided by their standard errors. Used to detect outliers (or extreme values in the outcome y variable)</li>
+<li><code>.cooksd</code>: Cook’s distance, used to detect influential values, which can be an outlier or a high leverage point</li>
+</ul>
+<p>In the following section, we’ll describe, in details, how to use these graphs and metrics to check the regression assumptions and to diagnostic potential problems in the model.</p>
+</div>
+</div>
+<div id="linearity-of-the-data" class="section level2">
+<h2>Linearity of the data</h2>
+<p>The linearity assumption can be checked by inspecting the <strong>Residuals vs Fitted</strong> plot (1st plot):</p>
+<pre class="r"><code>plot(model, 1)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-residual-vs-fitted-plot-1.png" width="432" /></p>
+<p>Ideally, the residual plot will show no fitted pattern. That is, the red line should be approximately horizontal at zero. The presence of a pattern may indicate a problem with some aspect of the linear model.</p>
+<div class="success">
+<p>
+In our example, there is no pattern in the residual plot. This suggests that we can assume linear relationship between the predictors and the outcome variables.
+</p>
+</div>
+<div class="warning">
+<p>
+Note that, if the residual plot indicates a non-linear relationship in the data, then a simple approach is to use non-linear transformations of the predictors, such as log(x), sqrt(x) and x^2, in the regression model.
+</p>
+</div>
+</div>
+<div id="homogeneity-of-variance" class="section level2">
+<h2>Homogeneity of variance</h2>
+<p>This assumption can be checked by examining the <em>scale-location plot</em>, also known as the <em>spread-location plot</em>.</p>
+<pre class="r"><code>plot(model, 3)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-scale-location-plot-1.png" width="384" /></p>
+<p>This plot shows if residuals are spread equally along the ranges of predictors. It’s good if you see a horizontal line with equally spread points. In our example, this is not the case.</p>
+<p>It can be seen that the variability (variances) of the residual points increases with the value of the fitted outcome variable, suggesting non-constant variances in the residuals errors (or <em>heteroscedasticity</em>).</p>
+<p>A possible solution to reduce the heteroscedasticity problem is to use a log or square root transformation of the outcome variable (y).</p>
+<pre class="r"><code>model2 <- lm(log(sales) ~ youtube, data = marketing)
+plot(model2, 3)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-heteroscedasticity-1.png" width="384" /></p>
+</div>
+<div id="normality-of-residuals" class="section level2">
+<h2>Normality of residuals</h2>
+<p>The QQ plot of residuals can be used to visually check the normality assumption. The normal probability plot of residuals should approximately follow a straight line.</p>
+<p>In our example, all the points fall approximately along this reference line, so we can assume normality.</p>
+<pre class="r"><code>plot(model, 2)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-normality-of-residuals-1.png" width="384" /></p>
+</div>
+<div id="outliers-and-high-levarage-points" class="section level2">
+<h2>Outliers and high levarage points</h2>
+<p><strong>Outliers</strong>:</p>
+<p>An outlier is a point that has an extreme outcome variable value. The presence of outliers may affect the interpretation of the model, because it increases the RSE.</p>
+<p>Outliers can be identified by examining the <em>standardized residual</em> (or <em>studentized residual</em>), which is the residual divided by its estimated standard error. Standardized residuals can be interpreted as the number of standard errors away from the regression line.</p>
+<p>Observations whose standardized residuals are greater than 3 in absolute value are possible outliers <span class="citation">(James et al. 2014)</span>.</p>
+<p><strong>High leverage points</strong>:</p>
+<p>A data point has high leverage, if it has extreme predictor x values. This can be detected by examining the leverage statistic or the <em>hat-value</em>. A value of this statistic above <code>2(p + 1)/n</code> indicates an observation with high leverage <span class="citation">(P. Bruce and Bruce 2017)</span>; where, <code>p</code> is the number of predictors and <code>n</code> is the number of observations.</p>
+<p>Outliers and high leverage points can be identified by inspecting the <em>Residuals vs Leverage</em> plot:</p>
+<pre class="r"><code>plot(model, 5)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-residuals-vs-leverage-points-1.png" width="384" /></p>
+<div class="success">
+<p>
+The plot above highlights the top 3 most extreme points (#26, #36 and #179), with a standardized residuals below -2. However, there is no outliers that exceed 3 standard deviations, what is good.
+</p>
+<p>
+Additionally, there is no high leverage point in the data. That is, all data points, have a leverage statistic below 2(p + 1)/n = 4/200 = 0.02.
+</p>
+</div>
+</div>
+<div id="influential-values" class="section level2">
+<h2>Influential values</h2>
+<p>An influential value is a value, which inclusion or exclusion can alter the results of the regression analysis. Such a value is associated with a large residual.</p>
+<p>Not all outliers (or extreme data points) are influential in linear regression analysis.</p>
+<p>Statisticians have developed a metric called <em>Cook’s distance</em> to determine the influence of a value. This metric defines influence as a combination of leverage and residual size.</p>
+<p>A rule of thumb is that an observation has high influence if Cook’s distance exceeds <code>4/(n - p - 1)</code><span class="citation">(P. Bruce and Bruce 2017)</span>, where <code>n</code> is the number of observations and <code>p</code> the number of predictor variables.</p>
+<p>The <em>Residuals vs Leverage</em> plot can help us to find influential observations if any. On this plot, outlying values are generally located at the upper right corner or at the lower right corner. Those spots are the places where data points can be influential against a regression line.</p>
+<p>The following plots illustrate the Cook’s distance and the leverage of our model:</p>
+<pre class="r"><code># Cook&#39;s distance
+plot(model, 4)
+# Residuals vs Leverage
+plot(model, 5)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-cooks-distance-1.png" width="720" /></p>
+<p>By default, the top 3 most extreme values are labelled on the Cook’s distance plot. If you want to label the top 5 extreme values, specify the option <code>id.n</code> as follow:</p>
+<pre class="r"><code>plot(model, 4, id.n = 5)</code></pre>
+<p>If you want to look at these top 3 observations with the highest Cook’s distance in case you want to assess them further, type this R code:</p>
+<pre class="r"><code>model.diag.metrics %>%
+  top_n(3, wt = .cooksd)</code></pre>
+<pre><code>##   index sales youtube .fitted .resid   .hat .cooksd .std.resid
+## 1    26  14.4     315    23.4  -9.04 0.0142  0.0389      -2.33
+## 2    36  15.4     349    25.0  -9.66 0.0191  0.0605      -2.49
+## 3   179  14.2     332    24.2 -10.06 0.0165  0.0563      -2.59</code></pre>
+<div class="warning">
+<p>
+When data points have high Cook’s distance scores and are to the upper or lower right of the leverage plot, they have leverage meaning they are influential to the regression results. The regression results will be altered if we exclude those cases.
+</p>
+</div>
+<div class="success">
+<p>
+In our example, the data don’t present any influential points. Cook’s distance lines (a red dashed line) are not shown on the Residuals vs Leverage plot because all points are well inside of the Cook’s distance lines.
+</p>
+</div>
+<p>Let’s show now another example, where the data contain two extremes values with potential influence on the regression results:</p>
+<pre class="r"><code>df2 <- data.frame(
+  x = c(marketing$youtube, 500, 600),
+  y = c(marketing$sales, 80, 100)
+)
+model2 <- lm(y ~ x, df2)</code></pre>
+<p>Create the <em>Residuals vs Leverage</em> plot of the two models:</p>
+<pre class="r"><code># Cook&#39;s distance
+plot(model2, 4)
+# Residuals vs Leverage
+plot(model2, 5)</code></pre>
+<p><img src="http://www.sthda.com/english/sthda-upload/figures/machine-learning-essentials/011-regression-assumptions-and-diagnostics-influential-observations-1.png" width="720" /></p>
+<p>On the Residuals vs Leverage plot, look for a data point outside of a dashed line, Cook’s distance. When the points are outside of the Cook’s distance, this means that they have high Cook’s distance scores. In this case, the values are influential to the regression results. The regression results will be altered if we exclude those cases.</p>
+<p>In the above example 2, two data points are far beyond the Cook’s distance lines. The other residuals appear clustered on the left. The plot identified the influential observation as #201 and #202. If you exclude these points from the analysis, the slope coefficient changes from 0.06 to 0.04 and R2 from 0.5 to 0.6. Pretty big impact!</p>
+</div>
+<div id="discussion" class="section level2">
+<h2>Discussion</h2>
+<p>This chapter describes linear regression assumptions and shows how to diagnostic potential problems in the model.</p>
+<p>The diagnostic is essentially performed by visualizing the residuals. Having patterns in residuals is not a stop signal. Your current regression model might not be the best way to understand your data.</p>
+<p>Potential problems might be:</p>
+<ul>
+<li><p>A non-linear relationships between the outcome and the predictor variables. When facing to this problem, one solution is to include a quadratic term, such as polynomial terms or log transformation. See Chapter @ref(polynomial-and-spline-regression).</p></li>
+<li><p>Existence of important variables that you left out from your model. Other variables you didn’t include (e.g., age or gender) may play an important role in your model and data. See Chapter @ref(confounding-variables).</p></li>
+<li><p>Presence of outliers. If you believe that an outlier has occurred due to an error in data collection and entry, then one solution is to simply remove the concerned observation.</p></li>
+</ul>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-bruce2017">
+<p>Bruce, Peter, and Andrew Bruce. 2017. <em>Practical Statistics for Data Scientists</em>. O’Reilly Media.</p>
+</div>
+<div id="ref-james2014">
+<p>James, Gareth, Daniela Witten, Trevor Hastie, and Robert Tibshirani. 2014. <em>An Introduction to Statistical Learning: With Applications in R</em>. Springer Publishing Company, Incorporated.</p>
+</div>
+</div>
+</div>
+</div><!--end rdoc-->
+</div>
+<hr />
+<div class="spacer"></div>
+</div>
+<aside>
+<div class="spacer"></div>
+<div class="left smaller">
+<div class="notation" id="notation-161" itemprop="aggregateRating" itemscope="itemscope" itemtype="http://schema.org/AggregateRating">
+<span class="stars">
+<a href="" onclick="return false;" class="fa star fa-star" id="star-161-1"></a>
+<a href="" onclick="return false;" class="fa star fa-star" id="star-161-2"></a>
+<a href="" onclick="return false;" class="fa star fa-star" id="star-161-3"></a>
+<a href="" onclick="return false;" class="fa star fa-star" id="star-161-4"></a>
+<a href="" onclick="return false;" class="fa star fa-star" id="star-161-5"></a>
+</span>
+<span class="notes">
+<span class="number-notes" itemprop="ratingCount">2</span>
+<span title="2 Notes">Notes</span>
+</span>
+<meta itemprop="ratingValue" content="5">
+<meta itemprop="bestRating" content="5">
+</div>
+</div>
+<!--============ AK ========-->
+<br/>
+<div class = "success english-msg">
+Enjoyed this article? Give us 5 stars <span class = "fa fa-star"></span> <span class = "fa fa-star"></span>
+<span class = "fa fa-star"></span><span class = "fa fa-star"></span><span class = "fa fa-star"></span> (just above this text block)! Reader needs to be STHDA member for voting. I’d be very grateful if you’d help it spread by emailing it to a friend, or sharing it on Twitter, Facebook or Linked In. 
+<br/><br/>
+Show me some love with the like buttons below... Thank you and please don't forget to share and comment below!!
+</div>
+<div class = "success french-msg">
+Avez vous aimé cet article? Donnez nous 5 étoiles <span class = "fa fa-star"></span> <span class = "fa fa-star"></span>
+<span class = "fa fa-star"></span><span class = "fa fa-star"></span><span class = "fa fa-star"></span> (juste au dessus de ce block)! Vous devez être membre pour voter. Je vous serais très reconnaissant si vous aidiez à sa diffusion en l'envoyant par courriel à un ami ou en le partageant sur Twitter, Facebook ou Linked In. 
+<br/><br/>
+Montrez-moi un peu d'amour avec les like ci-dessous ... Merci et n'oubliez pas, s'il vous plaît, de partager et de commenter ci-dessous!
+</div>
+<br/>
+<div style="width:100%;height:15px; background-color:white; margin-left:2px; margin-bottom:10px;" class = "google_link">
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-5474463749888038"
+     data-ad-slot="4712884969"
+     data-ad-format="link"></ins>
+            </div><br/>
+<div class="spacer"></div>
+                
+                <div class="addthis_native_toolbox"></div>
+                <center>
+                    <br/><br/><br/>
+                     <div class = "annonce_adaptable_bottom">
+                       <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-5474463749888038"
+     data-ad-slot="5770815769"
+     data-ad-format="auto"></ins>
+                    </div>
+                </center>
+                <br/>
+                <!--====================================
+                RECOMMENDED BOOKS
+                ========================================-->
+                <div id = "recommended_books">
+                <h2 class = "wiki_paragraph1">Recommended for You!</h2>
+                <br/>
+                 
+                <div class = "small-block book_ads content-privileged-friends">
+                <center>
+                <a href = "http://www.sthda.com/english/web/5-bookadvisor/54-machine-learning-essentials/">
+                <img src = "http://www.sthda.com/english/upload/machine-learning-essentials-frontcover-200px.png" width = "100px"/><br/>
+Machine Learning Essentials: Practical Guide in R
+</a>
+</center>
+                </div>
+                <div class = "small-block book_ads content-privileged-friends">
+                <center>
+                <a href = "http://www.sthda.com/english/web/5-bookadvisor/17-practical-guide-to-cluster-analysis-in-r/">
+                <img src = "http://www.sthda.com/english/upload/practical-guide-to-cluster-analysis-in-r.jpg" /><br/>
+Practical Guide to Cluster Analysis in R
+</a>
+</center>
+                </div>
+                <div class = "small-block book_ads content-privileged-friends">
+                <center>
+                <a href = "http://www.sthda.com/english/web/5-bookadvisor/50-practical-guide-to-principal-component-methods-in-r/">
+                <img src = "http://www.sthda.com/english/sthda-upload/images/principal-component-methods-cover-200px.png" width = "100px" height="125px" /><br/>
+Practical Guide to Principal Component Methods in R
+</a>
+</center>
+                </div>
+                 <div class = "small-block book_ads content-privileged-friends">
+                <center>
+                <a href = "http://www.sthda.com/english/web/5-bookadvisor/52-r-graphics-essentials-for-great-data-visualization-200-practical-examples-you-want-to-know-for-data-science/">
+                <img src = "http://www.sthda.com/english/upload/r-graphics-essentials-cookbook-100.png" /><br/>
+R Graphics Essentials for Great Data Visualization
+</a>
+</center>
+                </div>
+                <div class = "small-block book_ads content-privileged-friends">
+                <center>
+                <a href = "http://www.sthda.com/english/web/5-bookadvisor/53-network-analysis-and-visualization-in-r/">
+                <img src = "http://www.sthda.com/english/upload/network-analysis-and-visualization-in-r-200px.png" width = "100px" /><br/>
+Network Analysis and Visualization in R
+</a>
+</center>
+                </div>
+                <div class = "small-block book_ads">
+                <br/><br/>
+                <center>
+                <a href = "http://www.sthda.com/english/web/5-bookadvisor/" >
+                <span><i class="fa fa-4x fa-arrow-circle-right" aria-hidden="true"></i></span><br/>
+More books on R and data science 
+</a>
+</center>
+                </div>
+                <!--end books -->
+                
+                
+<div class="spacer"></div>
+  
+                <div id="recommended-for-you" class="section level2"><h2>Recommended for you</h2><div class="success"><p>This section contains best data science and self-development resources to help you on your path.</p></div><div class="affiliate-marketing"><h3>Coursera - Online Courses and Specialization</h3><h4>Data science</h4><ul><li><a href="https://www.datanovia.com/en/xkkk" target="_blank" rel="nofollow">Course: Machine Learning: Master the Fundamentals</a> by Standford</li><li><a href="https://www.datanovia.com/en/e85g" target="_blank" rel="nofollow">Specialization: Data Science</a> by Johns Hopkins University</li><li><a href="https://www.datanovia.com/en/xepy" target="_blank" rel="nofollow">Specialization: Python for Everybody</a> by University of Michigan</li><li><a href="https://www.datanovia.com/en/mm6m" target="_blank" rel="nofollow">Courses: Build Skills for a Top Job in any Industry</a> by Coursera</li><li><a href="https://www.datanovia.com/en/xxae" target="_blank" rel="nofollow">Specialization: Master Machine Learning Fundamentals</a> by University of Washington</li><li><a href="https://www.datanovia.com/en/2j0s" target="_blank" rel="nofollow">Specialization: Statistics with R</a> by Duke University</li><li><a href="https://www.datanovia.com/en/ih09" target="_blank" rel="nofollow">Specialization: Software Development in R</a> by Johns Hopkins University</li><li><a href="https://www.datanovia.com/en/sprm" target="_blank" rel="nofollow">Specialization: Genomic Data Science</a> by Johns Hopkins University</li></ul><h4>Popular Courses Launched in 2020</h4><ul><li><a href="https://www.datanovia.com/en/bmsr" target="_blank" rel="nofollow">Google IT Automation with Python</a> by Google</li><li><a href="https://www.datanovia.com/en/qlmg" target="_blank" rel="nofollow">AI for Medicine</a> by deeplearning.ai</li><li><a href="https://www.datanovia.com/en/1fws" target="_blank" rel="nofollow">Epidemiology in Public Health Practice</a> by Johns Hopkins University</li><li><a href="https://www.datanovia.com/en/wp8o" target="_blank" rel="nofollow">AWS Fundamentals</a> by Amazon Web Services</li></ul><h4>Trending Courses</h4><ul><li><a href="https://www.datanovia.com/en/zo43" target="_blank" rel="nofollow">The Science of Well-Being</a> by Yale University</li><li><a href="https://www.datanovia.com/en/hl6x" target="_blank" rel="nofollow">Google IT Support Professional</a> by Google</li><li><a href="https://www.datanovia.com/en/xepy" target="_blank" rel="nofollow">Python for Everybody</a> by University of Michigan</li><li><a href="https://www.datanovia.com/en/lhby" target="_blank" rel="nofollow">IBM Data Science Professional Certificate</a> by IBM</li><li><a href="https://www.datanovia.com/en/c59x" target="_blank" rel="nofollow">Business Foundations</a> by University of Pennsylvania</li><li><a href="https://www.datanovia.com/en/vb4s" target="_blank" rel="nofollow">Introduction to Psychology</a> by Yale University</li><li><a href="https://www.datanovia.com/en/u4tn" target="_blank" rel="nofollow">Excel Skills for Business</a> by Macquarie University</li><li><a href="https://www.datanovia.com/en/e68c" target="_blank" rel="nofollow">Psychological First Aid</a> by Johns Hopkins University</li><li><a href="https://www.datanovia.com/en/wetr" target="_blank" rel="nofollow">Graphic Design</a> by Cal Arts</li></ul><h3>Books - Data Science</h3><h4>Our Books</h4><ul><li><a href="https://www.datanovia.com/en/0cld" target="_blank" rel="nofollow">Practical Guide to Cluster Analysis in R</a> by A. Kassambara (Datanovia)</li><li><a href="https://www.datanovia.com/en/8ktk" target="_blank" rel="nofollow">Practical Guide To Principal Component Methods in R</a> by A. Kassambara (Datanovia)</li><li><a href="https://www.datanovia.com/en/4vs9" target="_blank" rel="nofollow">Machine Learning Essentials: Practical Guide in R</a> by A. Kassambara (Datanovia)</li><li><a href="https://www.datanovia.com/en/lqti" target="_blank" rel="nofollow">R Graphics Essentials for Great Data Visualization</a> by A. Kassambara (Datanovia)</li><li><a href="https://www.datanovia.com/en/udft" target="_blank" rel="nofollow">GGPlot2 Essentials for Great Data Visualization in R</a> by A. Kassambara (Datanovia)</li><li><a href="https://www.datanovia.com/en/y7ld" target="_blank" rel="nofollow">Network Analysis and Visualization in R</a> by A. Kassambara (Datanovia)</li><li><a href="https://www.datanovia.com/en/pqs3" target="_blank" rel="nofollow">Practical Statistics in R for Comparing Groups: Numerical Variables</a> by A. Kassambara (Datanovia)</li><li><a href="https://www.datanovia.com/en/a52c" target="_blank" rel="nofollow">Inter-Rater Reliability Essentials: Practical Guide in R</a> by A. Kassambara (Datanovia)</li></ul><h4>Others</h4><ul><li><a href="https://www.datanovia.com/en/7qlr" target="_blank" rel="nofollow">R for Data Science: Import, Tidy, Transform, Visualize, and Model Data</a> by Hadley Wickham &amp; Garrett Grolemund</li><li><a href="https://www.datanovia.com/en/11a4" target="_blank" rel="nofollow">Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow: Concepts, Tools, and Techniques to Build Intelligent Systems</a> by Aurelien Géron</li><li><a href="https://www.datanovia.com/en/cjm2" target="_blank" rel="nofollow">Practical Statistics for Data Scientists: 50 Essential Concepts</a> by Peter Bruce &amp; Andrew Bruce</li><li><a href="https://www.datanovia.com/en/fu7j" target="_blank" rel="nofollow">Hands-On Programming with R: Write Your Own Functions And Simulations</a> by Garrett Grolemund &amp; Hadley Wickham</li><li><a href="https://www.datanovia.com/en/f7zj" target="_blank" rel="nofollow">An Introduction to Statistical Learning: with Applications in R</a> by Gareth James et al.</li><li><a href="https://www.datanovia.com/en/2u9i" target="_blank" rel="nofollow">Deep Learning with R</a> by François Chollet &amp; J.J. Allaire</li><li><a href="https://www.datanovia.com/en/1flt" target="_blank" rel="nofollow">Deep Learning with Python</a> by François Chollet</li></ul></div></div>
+                
+<section id="comments-list">
+<header>
+<h2>Comments</h2>
+</header>
+<div class="content">
+<div id="msg-helper-759e" class="message-helper notice">You are not authorized to post a comment</div>
+<div class="spacer"></div>
+<article id="com921" class="message" itemscope="itemscope" itemtype="http://schema.org/Comment">
+<header>
+<h2>Comment</h2>
+</header>
+<div class="message-container">
+<div class="message-user-infos">
+<div class="message-pseudo">
+<a itemprop="author" href="/english/user/profile/6630" class="member" >
+Redha soyan
+</a>
+</div>
+<div class="message-level">Member</div>
+<img src="/english/templates/sthda/images/no_avatar.png" alt="Avatar" class="message-avatar" />
+</div>
+<div class="message-date">
+<span class="actions">
+<a itemprop="url" href="#com921">#921</a>
+</span>
+<time itemprop="datePublished" datetime="2021-10-14T02:04:36+02:00">10/14/2021 at 02h04</time>
+</div>
+<div class="message-message">
+<div itemprop="text" class="message-content content">I'm Redha Soyan, Out of respect for you and your spells I must make this testimony known to all, I've been to other spell casters without seeing any result. I just wished I came to you earlier, I got the best from you. My ex husband was gone for a year and I went everywhere and other spell casters for help but no result until my friend introduced me to Dr. Ken After the Love Spell was done, I finally got a call from him. His spells worked wonders and my husband is back full of love. It's a miracle! He suddenly came back with flowers saying that i should forgive him, i was truly flabbergasted and shocked when my husband knelt down begging for forgiveness and for me to accept him back.. I'm really short of words and joyful, you are a God sent to me and my entire family.. And now I am a joyful woman once again. Thank you so much Dr. Ken. To everyone who is looking for a real spell caster should contact Dr. Ken On <a href="mailto:Drkenlovespell@gmail.com">Drkenlovespell@gmail.com</a> OR you can also reach him directly on his Whatsapp  +1(201) 992-1012.</div>
+</div>
+</div>
+<footer></footer>
+</article>
+<article id="com919" class="message" itemscope="itemscope" itemtype="http://schema.org/Comment">
+<header>
+<h2>Comment</h2>
+</header>
+<div class="message-container">
+<div class="message-user-infos">
+<div class="message-pseudo">
+<a itemprop="author" href="/english/user/profile/6458" class="member" >
+Vividdiagnostics
+</a>
+</div>
+<div class="message-level">Member</div>
+<img src="/english/templates/sthda/images/no_avatar.png" alt="Avatar" class="message-avatar" />
+</div>
+<div class="message-date">
+<span class="actions">
+<a itemprop="url" href="#com919">#919</a>
+</span>
+<time itemprop="datePublished" datetime="2021-08-31T09:40:52+02:00">08/31/2021 at 09h40</time>
+</div>
+<div class="message-message">
+<div itemprop="text" class="message-content content">Thanks for sharing these useful Information  Regarding linear assumptions and diagnsotics<br />
+https://www.vividdiagnostics.in/</div>
+</div>
+</div>
+<footer></footer>
+</article>
+<article id="com914" class="message" itemscope="itemscope" itemtype="http://schema.org/Comment">
+<header>
+<h2>Comment</h2>
+</header>
+<div class="message-container">
+<div class="message-user-infos">
+<div class="message-pseudo">
+<a itemprop="author" href="/english/user/profile/6181" class="member" >
+EVA
+</a>
+</div>
+<div class="message-level">Member</div>
+<img src="/english/templates/sthda/images/no_avatar.png" alt="Avatar" class="message-avatar" />
+</div>
+<div class="message-date">
+<span class="actions">
+<a itemprop="url" href="#com914">#914</a>
+</span>
+<time itemprop="datePublished" datetime="2021-06-17T02:27:45+02:00">06/17/2021 at 02h27</time>
+</div>
+<div class="message-message">
+<div itemprop="text" class="message-content content"><p>How I Got My Husband back... Am so excited to share my testimony of a real spell caster who brought my husband back to me. My husband and I have been married for about 6 years now. We were happily married with two kids, a boy and a girl. 3 months ago, I started to notice some strange behavior from him and a few weeks later I found out that my husband is seeing someone else. He started coming home late from work, he hardly cared about me or the kids anymore, Sometimes he goes out and doesn't even come back home for about 2-3 days. I did all I could to rectify this problem but all to no avail. I became very worried and needed help. As I was browsing through the Internet one day, I came across a website that suggested that Dr.Owo can help solve marital problems, restore broken relationships and so on. So, I felt I should give him a try. I contacted him and told him my problems and he told me what to do and I did it and he did a spell for me. 48 hours later, my husband came to me and apologized for the wrongs he did and promised never to do it again. Ever since the\n, everything has returned back to normal. My family are living together happily again.. All thanks to Dr. Owo If you have any problem contact him and I guarantee you that he will help you. contact him on his email: &lt;a href="mailto:drowoherbs@gmail.com" target="_blank"&gt;drowoherbs@gmail.com&lt;/a&gt;</p></div>
+</div>
+</div>
+<footer></footer>
+</article>
+<article id="com652" class="message" itemscope="itemscope" itemtype="http://schema.org/Comment">
+<header>
+<h2>Comment</h2>
+</header>
+<div class="message-container">
+<div class="message-user-infos">
+<div class="message-pseudo">
+<span itemprop="author">Visitor</span>
+</div>
+<div class="message-level">Visitor</div>
+<img src="/english/templates/sthda/images/no_avatar.png" alt="Avatar" class="message-avatar" />
+</div>
+<div class="message-date">
+<span class="actions">
+<a itemprop="url" href="#com652">#652</a>
+</span>
+<time itemprop="datePublished" datetime="2018-11-27T07:25:39+01:00">11/27/2018 at 07h25</time>
+</div>
+<div class="message-message">
+<div itemprop="text" class="message-content content">Great summary, easy to understand.<br />
+Thank you.</div>
+</div>
+</div>
+<footer></footer>
+</article>
+<article id="com636" class="message" itemscope="itemscope" itemtype="http://schema.org/Comment">
+<header>
+<h2>Comment</h2>
+</header>
+<div class="message-container">
+<div class="message-user-infos">
+<div class="message-pseudo">
+<span itemprop="author">Visitor</span>
+</div>
+<div class="message-level">Visitor</div>
+<img src="/english/templates/sthda/images/no_avatar.png" alt="Avatar" class="message-avatar" />
+</div>
+<div class="message-date">
+<span class="actions">
+<a itemprop="url" href="#com636">#636</a>
+</span>
+<time itemprop="datePublished" datetime="2018-10-24T10:51:29+02:00">10/24/2018 at 10h51</time>
+</div>
+<div class="message-message">
+<div itemprop="text" class="message-content content">"Our regression equation is: y = 8.43 + 0.07*x, that is sales = 8.43 + 0.047*youtube."<br />
+I guess it is supposed to be sales = 8.43 + 0.07*youtube?</div>
+</div>
+</div>
+<footer></footer>
+</article>
+<article id="com588" class="message" itemscope="itemscope" itemtype="http://schema.org/Comment">
+<header>
+<h2>Comment</h2>
+</header>
+<div class="message-container">
+<div class="message-user-infos">
+<div class="message-pseudo">
+<span itemprop="author">Visitor</span>
+</div>
+<div class="message-level">Visitor</div>
+<img src="/english/templates/sthda/images/no_avatar.png" alt="Avatar" class="message-avatar" />
+</div>
+<div class="message-date">
+<span class="actions">
+<a itemprop="url" href="#com588">#588</a>
+</span>
+<time itemprop="datePublished" datetime="2018-08-17T08:19:04+02:00">08/17/2018 at 08h19</time>
+</div>
+<div class="message-message">
+<div itemprop="text" class="message-content content">this was amazing the number of independant variables in my model increased after  i removed the outliers! <img src="/english/images/smileys/smile.png" alt=":)" class="smiley" /></div>
+</div>
+</div>
+<footer></footer>
+</article>
+<article id="com505" class="message" itemscope="itemscope" itemtype="http://schema.org/Comment">
+<header>
+<h2>Comment</h2>
+</header>
+<div class="message-container">
+<div class="message-user-infos">
+<div class="message-pseudo">
+<a itemprop="author" href="/english/user/profile/1086" class="member" >
+tomer mann
+</a>
+</div>
+<div class="message-level">Member</div>
+<img src="/english/templates/sthda/images/no_avatar.png" alt="Avatar" class="message-avatar" />
+</div>
+<div class="message-date">
+<span class="actions">
+<a itemprop="url" href="#com505">#505</a>
+</span>
+<time itemprop="datePublished" datetime="2018-05-29T17:43:13+02:00">05/29/2018 at 17h43</time>
+</div>
+<div class="message-message">
+<div itemprop="text" class="message-content content">brilliant as always!</div>
+</div>
+</div>
+<footer></footer>
+</article>
+</div>
+<footer></footer>
+</section>
+</aside>
+<footer></footer>
+</article>
+</div>
+<footer></footer>
+</section>
+</div>
+</div>
+<div class="spacer"></div>
+</div>
+<footer id="footer">
+<div id="top-footer">
+<div id="newsletter">
+<form action="/english/newsletter/?url=/subscribe/" method="post">
+<div class="newsletter-form input-element-button">
+<span class="newsletter-title">Newsletter</span> 
+<input type="text" name="mail_newsletter" maxlength="50" value="" placeholder="Email">
+<input type="hidden" name="subscribe" value="subscribe">
+<input type="hidden" name="token" value="cd99023e3b133bce">
+<button type="submit" class="newsletter-submit"><i class="fa fa-envelope-o"></i></button>
+</div>
+</form>
+</div>
+<div class="spacer"></div>
+</div>
+<div class="footer-infos">
+<span class="footer-infos-powered-by">Boosted by <a href="http://www.phpboost.com" title="Link to PHPBoost CMS official website">PHPBoost</a> </span>
+</div>
+</footer>
+   
+<link rel="stylesheet" href="/english/rsthda/templates/scripts/jqwidgets-ver3.5.0//styles/jqx.base.css" type="text/css" />
+<link rel="stylesheet" href="/english/rsthda/templates/scripts/jqwidgets-ver3.5.0//styles/jqx.ui-start.css" type="text/css" />
+<!--- ak -->
+  
+ 
+ 
+<style>#rdoc .caption{display:none;}</style>
+ 
+<a id="scroll-to-top" class="scroll-to" href="#" title="Scroll to Top"><i class="fa fa-chevron-up"></i></a>
+<script>
+<!--
+//Variables PHPBoost
+var PATH_TO_ROOT = "/english";
+var TOKEN        = "cd99023e3b133bce";
+var THEME        = "sthda";
+var LANG         = "english";
+//Variables BBCode
+var L_HIDE_MESSAGE    = 'This message is hidden, click here to reveal its contents.';
+var L_HIDE_HIDEBLOCK  = 'Click here to hide this message.';
+var L_COPYTOCLIPBOARD = 'Copy to Clipboard';
+//Variables CookieBar
+var COOKIEBAR_DURATION        = 12;
+var COOKIEBAR_TRACKING_MODE   = 'notracking';
+var L_COOKIEBAR_CONTENT       = 'This website uses cookies to ensure you get the best experience on our website.';
+var L_COOKIEBAR_UNDERSTAND    = 'Ok';
+var L_COOKIEBAR_ALLOWED       = 'Allowed';
+var L_COOKIEBAR_DECLINED      = 'Declined';
+var L_COOKIEBAR_MORE_TITLE    = 'Explanations on the management of cookies and the &quot;cookie-bar&quot; (Learn more)';
+var L_COOKIEBAR_MORE          = 'Learn more';
+var L_COOKIEBAR_CHANGE_CHOICE = 'Change your preferences';
+var U_COOKIEBAR_ABOUTCOOKIE   = '/english/user/aboutcookie/';
+-->
+</script><script src="/english/kernel/lib/js/jquery/jquery.js"></script><script src="/english/kernel/lib/js/global.js"></script><script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script><script src="/english/kernel/lib/js/phpboost/notation.js"></script><script src="/english/rsthda/templates/scripts/jqwidgets-ver3.5.0/jqxcore.js"></script><script src="/english/rsthda/templates/scripts/jqwidgets-ver3.5.0/jqxmenu.js"></script><script src="/english/rsthda/templates/scripts/jqwidgets-ver3.5.0/jqxbuttons.js"></script><script src="/english/templates/sthda/ak/global.js"></script><script src="/english/sthda/js/jquery.gdocsviewer.min.js"></script><script src="/english/templates/sthda/ak/knitr.rcode.highlight.js"></script><script src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-50f0e98f7770f530"></script><script src="/english/kernel/lib/js/lightcase/lightcase.js"></script><script src="/english/user/templates/js/cookiebar.js"></script><script>
+window.addEventListener("load", function(){
+window.cookieconsent.initialise({
+  "palette": {
+    "popup": {
+      "background": "#000"
+    },
+    "button": {
+      "background": "#f1d600"
+    }
+  },
+  "position": "bottom-left",
+  "type": "opt-in",
+  "content": {
+    "message": "This website uses cookies to ensure you get the best experience on our website, to personalize content and ads and to analyze our traffic. We also share information about your use of our site with our social media, advertising and analytics partners. By using our site you agree to our use of cookies",
+    "dismiss": "Decline",
+    "allow": "OK",
+    "href": "https://www.google.com/intl/en/policies/privacy/partners/"
+  }
+})});
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-5474463749888038",
+          enable_page_level_ads: true
+     });
+function check_search_mini_form_post()
+{
+var textSearched = document.getElementById('TxTMiniSearched').value;
+if (textSearched.length > 3)
+{
+textSearched = escape_xmlhttprequest(textSearched);
+return true;
+}
+else
+{
+alert('The size of the string you\'re searching for must be at least 4 characters long!');
+return false;
+}
+}
+jQuery(document).ready(function() {
+jQuery('#search-token').val(TOKEN);
+});
+jQuery("#cssmenu-1764").menumaker({ title: "R & Data Mining", format: "multitoggle", breakpoint: 768 }); 
+function check_connect()
+{
+if( document.getElementById('login').value == "" )
+{
+alert("Please enter a nickname !");
+return false;
+}
+if( document.getElementById('password').value == "" )
+{
+alert("Please enter a password !");
+return false;
+}
+}
+function open_submenu(myid)
+{
+jQuery('#' + myid).toggleClass('active');
+}
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                    jQuery("#cssmenu-1825").menumaker({ title: "R Packages", format: "multitoggle", breakpoint: 768 }); 
+  (adsbygoogle = window.adsbygoogle || []).push({});
+  jQuery("#cssmenu-1849").menumaker({ title: "Blogroll", format: "multitoggle", breakpoint: 768 }); 
+(adsbygoogle = window.adsbygoogle || []).push({});
+var NOTATION_LANG_AUTH = 'You don\'t have the required level!';
+var NOTATION_LANG_ALREADY_VOTE = 'You have already voted';
+var NOTATION_LANG_NOTE = 'Note';
+var NOTATION_LANG_NOTES = 'Notes';
+var NOTATION_USER_CONNECTED = '';
+jQuery(document).ready(function() { new Note('161', '5', '5', ''); });
+(adsbygoogle = window.adsbygoogle || []).push({});
+(adsbygoogle = window.adsbygoogle || []).push({});
+function refresh_comments() {
+jQuery.ajax({
+url: PATH_TO_ROOT + '/kernel/framework/ajax/dispatcher.php?url=/comments/display/',
+type: "post",
+dataType: "html",
+data: {module_id: 'articles', id_in_module: '161', topic_identifier: 'default', token: 'cd99023e3b133bce'},
+success: function(returnData){
+jQuery("#comments-list").append(returnData);
+jQuery('#refresh-comments').remove();
+}
+});
+}
+ 
+/*<![CDATA[*/
+var jQuery = jQuery.noConflict();
+jQuery(document).ready(function() {
+   if(jQuery('a.embed').length!=0) jQuery('a.embed').gdocsViewer({width: "98%", height: 600});
+    if(jQuery('a.view').length!=0) jQuery('a.view').gdocsViewer({width: "98%", height: 600});
+});
+/*]]>*/
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+ 
+jQuery('[data-confirmation]').each(function() {
+data_confirmation = jQuery(this).attr('data-confirmation');
+if (data_confirmation == 'delete-element')
+var message = 'Do you really want to delete this item ?';
+else
+var message = data_confirmation;
+this.onclick = function () { return confirm(message); }
+});
+jQuery(document).ready(function() {
+jQuery('a[rel^=lightbox]').attr('data-rel', 'lightcase:collection');
+jQuery('a[data-lightbox^=formatter]').attr('data-rel', 'lightcase:collection');
+jQuery('a[data-rel^=lightcase]').lightcase({
+labels : {
+'errorMessage'    : 'The item you requested does not exist.',
+'sequenceInfo.of' : ' ' + 'of' + ' ',
+'close'           : 'Close',
+'navigator.prev'  : 'Previous',
+'navigator.next'  : 'Next',
+'navigator.play'  : 'Play',
+'navigator.pause' : 'Pause'
+},
+maxHeight: window.innerHeight,
+maxWidth: window.innerWidth,
+shrinkFactor: 0.85
+});
+});
+jQuery('#table').basictable();
+jQuery('#table2').basictable();
+jQuery('#table3').basictable();
+jQuery('#table4').basictable();
+jQuery('#table5').basictable();
+jQuery(function() {
+jQuery(".lined").linedtextarea();
+});
+</script></body>
+</html>

@@ -1,0 +1,252 @@
+---
+title: "Tiesinė kalibracija"
+subtitle: Tiesinės regresinės analizės pavyzdys
+date:  "`r Sys.Date()`"
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+---
+
+```{css, echo=FALSE}
+details {
+  background-color: #f0fff4;
+  border-color:     #dddddd;
+  border-style:     solid;
+  border-width:     1px;
+}
+```
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+library(chemCal)
+
+knitr::opts_chunk$set(
+    echo       = TRUE,
+    fig.height = 3, 
+    fig.width  = 5, 
+    fig.align  = "center",
+    echo       = TRUE,  # Ar rodyti R kodą?
+    eval       = TRUE   # Ar vykdyti R kodą?
+  )
+```
+
+# Užduotis
+
+Atliktas tyrimas, kurio metu buvo paruošta žinoma tirpalo koncentracija nuo 3,5 mg/ml iki 70,0 mg/ml. Išmatuotas šių tirpalų optinis tankis ties 660 nm spinduliuote, o duomenys pateikti byloje „`kalibravimui_d1.xlsx`“.
+Vėliau buvo atliktas eksperimentas, kurio metu buvo susintetinta ta pati medžiaga, o jos tirpalo optinis tankis mėgintuvėlyje buvo 0,334. Laikydami, kad optinis tankis kito tik dėl tyrėjus dominančios medžiagos, įvertinkite, kokia medžiagos koncentracija buvo tirpale?
+
+ 
+# Sprendimas
+
+## Duomenų įkėlimas ir peržiūra
+
+```{r, eval=FALSE}
+excel_sheets("duomenys/kalibravimui_d1.xlsx")
+```
+
+```{r}
+duomenys_d1 <- read_excel("duomenys/kalibravimui_d1.xlsx", sheet = "duomenys")
+```
+
+Nuskaitytus duomenis reikia peržiūrėti (atlikti skaitines ir grafines suvestines, kad žinotume, ką turime, ir kad viskas su duomenimis tvarkoje).
+
+
+
+Duomenų peržiūra ir suvestinė:
+
+```{r eval=FALSE}
+View(duomenys_d1)
+```
+
+```{r}
+glimpse(duomenys_d1)
+```
+
+```{r}
+summary(duomenys_d1)
+```
+
+
+Grafikas - sklaidos diagrama.
+```{r fig.height=4}
+# Kodas naudojamas taip: mano_Y ~ mano_X, data = mano_duomenys
+plot(OD ~ koncentracija, data = duomenys_d1)
+```
+
+
+
+## Modeliavimas
+
+### Modelio sudarymas
+
+Sudarome tokios formos lygtį: $Y = a + bX$, t. y., $OD = a + b \times koncentracija$.
+```{r}
+modelis1 <- lm(OD ~ koncentracija, data = duomenys_d1)
+```
+
+### Modelio braižymas
+
+Tinka tik tam atvejui, kai ryšys yra teigiamas.
+
+```{r fig.height=3.5, fig.width=7}
+# Kalibracijos kreivė:
+chemCal::calplot(modelis1, xlab = "Koncentracija", ylab = "OD")
+```
+
+
+### Modelio parametrų peržiūra
+
+
+1. Ar yra ryšys tarp $Y$ ir bent vieno $X$?
+2. Kaip gerai modelis paaiškina duomenų kitimą?
+3. Nustatome koeficientus ir į lygtį įrašome apvalindami tuo pačiu tikslumu.
+
+```{r}
+summary(modelis1)
+```
+
+Tad gauname $OD = -0{,}005 + 0{,}014 × koncentracija$, $R^2 = 0{,}989$.
+
+
+### Prielaidų tikrinimas
+
+```{r fig.height=5, fig.width=5}
+op <- par(mfrow = c(2, 2))
+plot(modelis1)
+par(op)
+```
+
+
+<details>
+<summary><b>Papildoma</b></summary>
+
+```{r}
+paklaidos <- residuals(modelis1)
+```
+
+
+**Ar paklaidų vidurkis lygus nuliui?**
+
+```{r}
+t.test(paklaidos)
+```
+
+
+**Ar paklaidos skirstosi *normaliai*?** 
+
+```{r}
+shapiro.test(paklaidos)
+```
+
+
+**Ar taškų sklaida yra vienoda ties kiekviena $X$ reikšme?**
+
+```{r}
+lmtest::bptest(modelis1)
+```
+
+
+**Ar yra išskirčių?**
+
+```{r paged.print=FALSE}
+car::outlierTest(modelis1)
+```
+
+</details>
+
+
+### LOD ir LOQ
+
+<details>
+<summary><b>Papildoma</b></summary>
+
+```{r}
+lod_rez <- chemCal::lod(modelis1)
+lod_rez
+```
+
+```{r}
+loq_rez <- chemCal::loq(modelis1)
+loq_rez
+```
+
+</details>
+
+### Modelio taikymas
+
+```{r}
+# Vienu metu gali būti nurodoma tik viena nauja reikšmė.
+nauja_reiksme <- 0.334
+
+rez <- chemCal::inverse.predict(modelis1, newdata = nauja_reiksme)
+# Atvaizdavimas duomenų lentelės pavidalu.
+rez %>% map(scales::number, accuracy = 0.1) %>% unlist() %>% t() %>% as_tibble()
+```
+
+
+# Atsakymas
+
+Sudarytas tiesinės regresijos modelis $OD = -0{,}005 + 0{,}014 × koncentracija$, $R^2 = 0{,}99$. Modeliui keliamos prielaidos buvo tenkinamos. Pagal šį modelį nustatyta, kad mėgintuvėlyje, kuriame esančio tirpalo optinis tankis yra 0,334, medžiagos koncentracija buvo 23,8 (95% PI 19,0–28,6) mg/ml. Rezultatai grafiškai atvaizduoti pav. 1.
+
+```{r pav-1, echo=TRUE, fig.cap=caption}
+caption <- paste0("**Pav 1.** Sklaidos diagrama su regresijos tiese (mėlyna). ",
+  "Paklaidų ribos žymi koncentracijos naujajame mėginyje 95% pasikliautinąjį ",
+  "intervalą (PI), šviesiai raudonos punktyrinės linijos – medžiagos aptikimo ",
+  "ribą (LOD).  ")
+
+ggplot(duomenys_d1, aes(x = koncentracija, y = OD)) +
+
+  # Duomenys ir modelis
+  geom_smooth(method = lm, formula = y ~ x, se = FALSE) +
+  geom_point(alpha = 0.5) +
+  
+  # Grafiko apipavidalinimas
+  scale_x_continuous(n.breaks = 7) +
+  scale_y_continuous(n.breaks = 6) +
+  labs(x = "Koncentracija, mg/ml")
+```
+
+***
+<details>
+<summary>Grafikas su išplėstiniais rezultatais</summary>
+
+
+```{r pav-1-adv, echo=TRUE, fig.cap=caption}
+caption <- paste0("**Pav 1.** Sklaidos diagrama su regresijos tiese (mėlyna). ",
+  "Paklaidų ribos žymi koncentracijos naujajame mėginyje 95% pasikliautinąjį ",
+  "intervalą (PI), šviesiai raudonos punktyrinės linijos – medžiagos aptikimo ",
+  "ribą (LOD).  ")
+
+ggplot(duomenys_d1, aes(x = koncentracija, y = OD)) +
+  # Aptikimo riba (LOD)
+  geom_vline(xintercept = lod_rez[[1]], color = "red", linetype = "dashed") +
+  geom_hline(yintercept = lod_rez[[2]], color = "red", linetype = "dashed") +
+  
+  # Duomenys ir modelis
+  geom_smooth(method = lm, formula = y ~ x, se = FALSE) +
+  geom_point(alpha = 0.5) +
+  
+  # Naujos koncentracijos žymėjimas
+  geom_vline(xintercept = rez$Prediction, color = "grey60", linetype = "dotted") +
+  geom_hline(yintercept = nauja_reiksme,  color = "grey60", linetype = "dotted") +
+  geom_errorbarh(
+    aes(
+      y = nauja_reiksme,
+      xmin = min(rez$`Confidence Limits`),
+      xmax = max(rez$`Confidence Limits`)
+    ),
+    color = "darkred", height = .06, linewidth = 1.1
+  ) +
+  
+  # Grafiko apipavidalinimas
+  scale_x_continuous(n.breaks = 7) +
+  scale_y_continuous(n.breaks = 6) +
+  labs(x = "Koncentracija, mg/ml")
+```
+</details>

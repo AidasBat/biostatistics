@@ -1,0 +1,109 @@
+
+Duomenų byla: `kalibracijai_3.xlsx`  
+
+Sudarykite tiesinės regresijos modelį kalibracijai.
+Patikrinkite modeliui keliamus reikalavimus.
+Rezultatus nubraižykite grafiškai ir aprašykite.
+
+# Sprendimas
+```{r setup, message=FALSE, results='hide'}
+library(tidyverse)
+library(magrittr)
+
+library(readxl)
+library(chemCal)
+
+# Chunk options
+knitr::opts_chunk$set(
+  echo       = TRUE,    # Should blocks with program code be shown in knitted documents?
+  eval       = TRUE,    # Should program code be evaluated?
+  fig.height = 3,       # Default height for plots.
+  fig.width  = 5,       # Default width for plots.
+  fig.align  = "center" # Default alignment for plots in knitted documents.
+)
+```
+
+## Duomenų įkėlimas, peržiūra ir suvestinė
+
+```{r}
+kalibracija3 <- read_excel("duomenys/kalibracijai_3.xlsx", sheet = "Sheet2")
+```
+
+```{r}
+kalibracija <- 
+  kalibracija3 %>% 
+  set_names(c("koncentracija", "OD"))
+
+glimpse(kalibracija)
+```
+
+```{r}
+summary(kalibracija)
+```
+
+
+Grafikas - sklaidos diagrama.
+```{r fig.height=4}
+
+plot(OD ~ koncentracija, data = kalibracija)
+```
+
+## Modeliavimas
+
+## Modelio sudarymas
+
+Sudarome tokios formos lygtį: $Y = a + bX$, t. y., $OD = a + b \times koncentracija$.
+```{r}
+modelis3 <- lm(OD ~ koncentracija, data = kalibracija)
+```
+
+### Modelio braižymas
+
+```{r fig.height=3.5, fig.width=7}
+# Kalibracijos kreivė:
+chemCal::calplot(modelis3, xlab = "Koncentracija", ylab = "OD")
+```
+
+### Modelio parametrų peržiūra
+
+```{r}
+summary(modelis3)
+```
+
+Gauname $OD = 0{,}00233 + 0{,}00482 × koncentracija$, $R^2 = 0{,}998$.
+
+### Prielaidų tikrinimas
+
+```{r fig.height=5, fig.width=5}
+op <- par(mfrow = c(2, 2))
+plot(modelis3)
+```
+
+### Modelio taikymas
+
+```{r}
+nauja_reiksme <- 0.72
+
+rez <- chemCal::inverse.predict(modelis3, newdata = nauja_reiksme)
+
+rez %>% map(scales::number, accuracy = 0.1) %>% unlist() %>% t() %>% as_tibble()
+```
+
+# Atsakymas
+
+Sudarytas tiesinės regresijos modelis $OD = 0{,}00233 + 0{,}00482 × koncentracija$, $R^2 = 0{,}998$. Modeliui keliamos prielaidos buvo tenkinamos. Pagal šį modelį nustatyta, kad mėgintuvėlyje, kuriame esančio tirpalo optinis tankis yra 0,72, medžiagos koncentracija buvo 50,2 (95% PI 47,8–52,6) ug/L. Rezultatai grafiškai atvaizduoti pav. 1.
+
+```{r pav-1, echo=TRUE, fig.cap=caption}
+caption <- paste0("**Pav 1.** Sklaidos diagrama su regresijos tiese (mėlyna).")
+
+ggplot(kalibracija, aes(x = koncentracija, y = OD)) +
+
+  # Duomenys ir modelis
+  geom_smooth(method = lm, formula = y ~ x, se = FALSE) +
+  geom_point(alpha = 0.5) +
+  
+  # Grafiko apipavidalinimas
+  scale_x_continuous(n.breaks = 7) +
+  scale_y_continuous(n.breaks = 6) +
+  labs(x = "Koncentracija, ug/L")
+```

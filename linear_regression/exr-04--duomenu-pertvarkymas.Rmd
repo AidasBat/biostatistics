@@ -1,0 +1,120 @@
+---
+title: "Citostatikas ir ląstelių gyvybingumas"
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+---
+
+```{css, echo=FALSE}
+details {
+  background-color: #f0fff4;
+  border-color:     #dddddd;
+  border-style:     solid;
+  border-width:     1px;
+}
+```
+
+# Užduotis
+
+Sudarykite kalibracijos lygtį tarp medžiagos koncentracijos ir optinės sugerties stiprumo.
+
+Duomenys: `kalibracija-sugertis.xlsx`  
+Pastaba: skirtinguose lapuose pateikti tie patys duomenys.
+
+
+# Sprendimas
+
+
+```{r setup, include=FALSE}
+# Packages ------------------------------------------------------------------
+
+library(tidyverse)
+
+library(chemCal)
+library(readxl) 
+
+# Settings ------------------------------------------------------------------
+
+# Chunk options
+knitr::opts_chunk$set(
+  echo       = TRUE,    # Should blocks with program code be shown in knitted documents?
+  eval       = TRUE,    # Should program code be evaluated?
+  fig.height = 3,       # Default height for plots.
+  fig.width  = 5,       # Default width for plots.
+  fig.align  = "center" # Default alignment for plots in knitted documents.
+)
+
+conflicted::conflict_prefer("filter", "dplyr")
+conflicted::conflict_prefer("lag",    "dplyr")
+
+set.seed(20201217) # Initial condition for random processes.
+```
+
+## Duomenys
+
+```{r}
+readxl::excel_sheets("duomenys/kalibracija-sugertis.xlsx")
+```
+
+```{r}
+sugertis_1 <- 
+  readxl::read_excel(
+    "duomenys/kalibracija-sugertis.xlsx",
+    sheet = "duomenys-fill",
+    range = "C7:D31"
+  ) %>% 
+  janitor::clean_names() %>% 
+  fill(koncentracija)
+
+head(sugertis_1)
+```
+
+```{r}
+sugertis_2 <- 
+  readxl::read_excel(
+    "duomenys/kalibracija-sugertis.xlsx",
+    sheet = "duomenys-pivot_longer",
+    range = "C7:F13"
+  ) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "koncentracija",
+    names_transform = list(koncentracija = as.integer),
+    values_to = "signalas",
+    values_drop_na = TRUE
+  )
+
+head(sugertis_2)
+```
+
+Įsitikiname grafiškai, kad abiejuose lapuose tie patys duomenys:
+
+```{r}
+plot(sugertis_1)
+```
+
+```{r}
+plot(sugertis_2)
+```
+
+## Modelio sudarymas ir peržiūra
+
+```{r}
+modelis <- lm(signalo_intensyvumas ~ koncentracija, data = sugertis_1)
+summary(modelis)
+```
+
+```{r fig.height=4, fig.width=8}
+calplot(modelis, xlim = c(0, 5.8), legend_x = 4.1)
+```
+
+
+# Atsakymas
+
+Atliekant tiesinę regresiją ryšio tarp medžiagos koncentracijos ir optinės sugerties neaptikta (R² < 0,01, p = 0,962).
+
+

@@ -1,0 +1,211 @@
+---
+title: "Citostatikas ir ląstelių gyvybingumas"
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+---
+
+```{css, echo=FALSE}
+details {
+  background-color: #f0fff4;
+  border-color:     #dddddd;
+  border-style:     solid;
+  border-width:     1px;
+}
+```
+
+# Užduotis
+
+Atliktas tyrimas, kurio metu registruoti duomenys apie ląstelių gyvybingumo priklausomybę nuo citostatiko koncentracijos. Duomenis atvaizduokite grafiškai. Naudodami regresijos lygtį nustatykite citostatiko koncentracijas, ląstelių gyvybingumą mažinančias 10% (CD10).
+
+Duomenys: `citostatikas-2.xlsx`
+
+
+# Sprendimas
+
+```{r setup, message=FALSE, results='hide'}
+library(tidyverse)
+library(magrittr)
+
+library(readxl)
+library(chemCal)
+
+# Chunk options
+knitr::opts_chunk$set(
+  echo       = TRUE,    # Should blocks with program code be shown in knitted documents?
+  eval       = TRUE,    # Should program code be evaluated?
+  fig.height = 3,       # Default height for plots.
+  fig.width  = 5,       # Default width for plots.
+  fig.align  = "center" # Default alignment for plots in knitted documents.
+)
+```
+
+```{r}
+citostatikas <- read_excel("duomenys/citostatikas-2.xlsx")
+citostatikas
+```
+
+Sutvarkomi stulpelių pavadinimai.
+```{r}
+# Panaudosime braižydami grafikus
+original_names <- names(citostatikas)
+```
+
+```{r}
+citostatikas <- 
+  citostatikas %>% 
+  set_names(c("citostatiko_koncentracija", "gyvybingumas"))
+
+glimpse(citostatikas)
+```
+
+
+Visas gyvybingumas yra 100%, o 10% sumažėjimas atitinka 90% gyvybingumą.
+
+```{r}
+gyvybingumas <- 90
+```
+
+
+
+## Duomenų braižymas
+
+```{r fig.height=3, fig.width=6}
+gg_grafikas <- 
+  ggplot(citostatikas, aes(x = citostatiko_koncentracija, y = gyvybingumas)) +
+  geom_hline(yintercept = gyvybingumas, lty = 2, color = "red") +
+  geom_smooth(method = lm,  formula = y ~ x) +
+  geom_point() + 
+  theme_bw()
+
+gg_grafikas
+```
+
+
+## Modelio sudarymas
+
+```{r}
+modelis <- lm(gyvybingumas ~ citostatiko_koncentracija, data = citostatikas)
+```
+
+
+## Modelio peržiūra
+
+
+```{r, fig.width=8, fig.height=4}
+calplot(modelis, legend_x = 2.2, ylim = c(40, 110))
+```
+
+```{r}
+summary(modelis)
+```
+
+
+## Prielaidų tikrinimas
+
+```{r fig.height=5, fig.width=5}
+op <- par(mfrow = c(2, 2));
+plot(modelis)
+par(op)
+```
+
+<details>
+<summary>Papildoma</summary>
+
+```{r}
+paklaidos <- residuals(modelis)
+```
+
+
+**Ar paklaidų vidurkis lygus nuliui?**
+
+```{r}
+t.test(paklaidos)
+```
+
+
+**Ar paklaidos skirstosi *normaliai*?** 
+
+```{r}
+shapiro.test(paklaidos)
+```
+
+
+**Ar taškų sklaida yra vienoda ties kiekviena $X$ reikšme?**
+
+```{r}
+lmtest::bptest(modelis)
+```
+
+
+**Ar yra išskirčių?**
+
+```{r paged.print=FALSE}
+car::outlierTest(modelis)
+```
+
+</details>
+
+
+
+## Prognozavimas
+
+**Tik data, jei modelio prielaidos yra tenkinamos.**
+
+
+```{r}
+ats <- chemCal::inverse.predict(modelis, newdata = gyvybingumas)
+ats
+```
+
+```{r}
+rez_lentele <-
+  tibble(
+    gyvybingumas = gyvybingumas,
+    citostatiko_koncentracija = ats$Prediction, 
+    pi_min = min(ats$`Confidence Limits`),
+    pi_max = max(ats$`Confidence Limits`)
+  )
+rez_lentele 
+```
+
+
+# Atsakymas
+
+Tirta ląstelių gyvybingumo ($G$, %) priklausomybė nuo citostatoko koncentracijos ($C$, ng/ml). Sudarytas tiesinės regresijos modelis $G = 99{,}9 - 15{,}6 · C$, $R² = 0{,}987$. Koncentracija, mažinanti gyvybingumą 10%, DC10 = 0,64 ng/ml [95% PI 0,30–0,97]. Rezultatai atvaizduoti pav. 1.
+
+(PI -- pasikliautinasis intervalas).
+
+```{r pav-1, echo=TRUE, fig.cap=CAPTION}
+CAPTION = paste0("**Pav. 1.** Ląstelių gyvybingumo priklausomybė nuo ",
+  "citostatiko koncentracijos. Paklaidų ribos žymi koncentracijos, kuri ",
+  "gyvybingumą mažinana 10% (DC10), 95% pasikliautinąjį intervalą.  ")
+
+gg_grafikas + 
+  geom_vline(
+    xintercept = as.numeric(rez_lentele[, 2:4]),
+    color = "grey", linetype = "dotted"
+  ) +
+  geom_errorbarh(
+    aes(xmin = pi_min, xmax = pi_max), data = rez_lentele,
+    color = "darkred", height = 3, linewidth = 1
+  ) +
+  xlab(original_names[1]) +
+  ylab(original_names[2]) +
+  scale_x_continuous(n.breaks = 7) +
+  lims(y = c(0, NA))
+```
+
+
+***
+
+Papildomi klausimai: 
+
+1. Kaip galėtumėte interpretuoti modelio $a$ koeficiento reikšmę? Kodėl taip gali būti?
+2. Kaip galėtumėte interpretuoti modelio $b$ koeficiento reikšmę?
+3. Kokie koeficiento $a$ matavimo vienetai?
+4. Kokie koeficiento $b$ matavimo vienetai?

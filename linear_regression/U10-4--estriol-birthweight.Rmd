@@ -1,0 +1,109 @@
+
+Duomenų byla: `Estriol-Birthweight.xlsx`  
+
+Sudarykite naujagimio svorio priklausomybės nuo estriolio koncentracijos modelį.
+Patikrinkite modelio keliamus reikalavimus.
+Rezultatus nubraižykite grafiškai ir aprašykite.
+
+# Sprendimas
+```{r setup, message=FALSE, results='hide'}
+library(tidyverse)
+library(magrittr)
+
+library(readxl)
+library(chemCal)
+
+# Chunk options
+knitr::opts_chunk$set(
+  echo       = TRUE,    # Should blocks with program code be shown in knitted documents?
+  eval       = TRUE,    # Should program code be evaluated?
+  fig.height = 3,       # Default height for plots.
+  fig.width  = 5,       # Default width for plots.
+  fig.align  = "center" # Default alignment for plots in knitted documents.
+)
+```
+
+## Duomenų įkėlimas, peržiūra ir suvestinė
+
+```{r}
+estriol_birthweight <- read_excel("duomenys/Estriol-Birthweight.xlsx", sheet = "data", skip = 1)
+```
+
+```{r}
+estrbirth <- 
+  estriol_birthweight[,-1] %>% 
+  set_names(c("Estriol", "Birthweight"))
+
+glimpse(estrbirth)
+```
+
+```{r}
+summary(estrbirth)
+```
+
+
+Grafikas - sklaidos diagrama.
+```{r fig.height=4}
+
+plot(Birthweight ~ Estriol, data = estrbirth)
+```
+
+## Modeliavimas
+
+## Modelio sudarymas
+
+Sudarome tokios formos lygtį: $Y = a + bX$, t. y., $Birthweight = a + b \times Estriol$.
+```{r}
+modelis4 <- lm(Estriol ~ Birthweight, data = estrbirth)
+```
+
+### Modelio braižymas
+
+```{r fig.height=3.5, fig.width=7}
+# Kalibracijos kreivė:
+chemCal::calplot(modelis4, xlab = "Estriol", ylab = "Birthweight")
+```
+
+### Modelio parametrų peržiūra
+
+```{r}
+summary(modelis4)
+```
+
+Gauname $Birthweight = -2{,}335 + 4{,}772 × Estriol$, $R^2 = 0{,}35$.
+
+### Prielaidų tikrinimas
+
+```{r fig.height=5, fig.width=5}
+op <- par(mfrow = c(2, 2))
+plot(modelis4)
+```
+
+### Modelio taikymas
+
+```{r}
+nauja_reiksme <- 16
+
+rez <- chemCal::inverse.predict(modelis4, newdata = nauja_reiksme)
+
+rez %>% map(scales::number, accuracy = 0.1) %>% unlist() %>% t() %>% as_tibble()
+```
+
+# Atsakymas
+
+Sudarytas tiesinės regresijos modelis $Birthweight = -2{,}335 + 4{,}772 × Estriol$, $R^2 = 0{,}35$. Modeliui keliamos prielaidos buvo tenkinamos. Pagal šį modelį nustatyta, kad esant 16 mg/24h estriolio dozavimui, gimimo svoris yra 30 (95% PI 13,1–16,9) g/100. Rezultatai grafiškai atvaizduoti pav. 1.
+
+```{r pav-1, echo=TRUE, fig.cap=caption}
+caption <- paste0("**Pav 1.** Sklaidos diagrama su regresijos tiese (mėlyna).")
+
+ggplot(estrbirth, aes(x = Estriol, y = Birthweight)) +
+
+  # Duomenys ir modelis
+  geom_smooth(method = lm, formula = y ~ x, se = FALSE) +
+  geom_point(alpha = 0.5) +
+  
+  # Grafiko apipavidalinimas
+  scale_x_continuous(n.breaks = 7) +
+  scale_y_continuous(n.breaks = 6) +
+  labs(x = "Dozė, mg/24h")
+```

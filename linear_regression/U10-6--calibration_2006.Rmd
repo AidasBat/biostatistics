@@ -1,0 +1,18 @@
+---
+title: "U10-5. Kalibracija 2006"
+output: html_document
+---
+
+
+Duomenų byla: `calibration_2006.txt`  
+
+Byloje „`calibration_2006.txt`“ yra duomenys, paimti iš mokslinio straipsnio (apie tai rašome byloje).
+
+1. Nuskaitykite 10 pirmų bylos eilučių kaip tekstą (jei nesimokėme, kaip tai daryti, tada tiesiog atsidarykite bylą) ir perskaitykite ten esančią informaciją.
+2. Nuskaitykite bylos duomenis (pvz., naudokite `fread()`{.r}) ir juos peržiūrėkite.
+3. Duomenis persitvarkykite į reikiamą formatą ir tinkamai susitvarkykite duomenų tipus.
+4. Duomenis nusibraižykite bazine R sistema.
+5. Duomenis nusibraižykite **ggplot2** sistema: atvaizduokite taškais ir parinkite tinkamą mažiausių kvadratų metodu apskaičiuotą tiesę, kai laisvasis lygties narys -- koeficientas $a \ne 0$.
+6. **Papildoma.** Duomenis nusibraižykite **ggplot2** sistema: atvaizduokite taškais ir geriausiai tinkančia regresijos tiese, kai $a = 0$.
+7. Įvardinkite, dėl kokių priežasčių duomenims modeliuoti netinka įprastinis mažiausių kvadratų metodas.
+

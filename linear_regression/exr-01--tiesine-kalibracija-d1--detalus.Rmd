@@ -1,0 +1,506 @@
+---
+title: "Tiesinė kalibracija"
+subtitle: Tiesinės regresinės analizės pavyzdys
+date:  "`r Sys.Date()`"
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{css, echo=FALSE}
+details {
+  background-color: #f0fff4;
+  border-color:     #dddddd;
+  border-style:     solid;
+  border-width:     1px;
+}
+```
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+library(chemCal)
+
+knitr::opts_chunk$set(
+  echo       = TRUE,
+  fig.height = 3, 
+  fig.width  = 5, 
+  fig.align  = "center",
+  echo       = TRUE,  # Ar rodyti R kodą?
+  eval       = TRUE   # Ar vykdyti R kodą?
+)
+
+# Sys.setlocale(locale = "Lithuanian")
+```
+
+
+> **Pastaba:** potemių, pažymėtų užrašu „papildoma“ šio kurso atsiskaitymui žinoti nebūtina.
+
+
+# Kalibracija ir regresija
+
+**Kalibravimas** -- matavimo prietaiso ir etalono rodmenų atitikimo patikrinimas (šaltinis: [lietuviuzodynas.lt](https://www.lietuviuzodynas.lt/terminai/Kalibravimas)).
+**Regresijos** metodai sprendžia problemą, kaip pagal vieno ar kelių kintamųjų reikšmes nustatyti (prognozuoti) galimas kito skaitinio kintamojo reikšmes.
+Šį kartą bus nagrinėjamas atvejis, kai turimi 2 kiekybiniai kintamieji ir sąsaja tarp jų yra **tiesinė**.
+Tad kalibracijos uždaviniui spręsti naudosime *tiesinės regresijos modelį*.
+
+
+# Modelis
+
+Mūsų modelis (pav. 1) yra tiesė, aprašoma lygtimi:
+
+$$Y = a + bX + \varepsilon$$
+Čia $X$ ir $Y$ yra kintamieji (duomenų sekos), $a$ ir $b$ lygties koeficientai, $\varepsilon$ -- kintamojo $Y$ matavimo paklaida.
+
+```{r fig-1, echo=FALSE, fig.cap=caption, out.width=250}
+caption <- "**Pav. 1.** Kai kurie paprastosios (vieno aiškinamojo kintamojo) tiesinės regresijos modelio elementai. Šaltinis [sthda.com](http://www.sthda.com/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/).  "
+
+knitr::include_graphics("pav/linear-regression.png")
+```
+
+Modeliavimo **tikslas**, išsiaiškinti, ar duomenis galima aprašyti tiesės lygtimi, ir jei taip, parinkti geriausiai duomenims tinkančius lygties koeficientus. 
+Sudarant modelį kintamieji bus parenkami šitaip:
+
++ $X$ (nepriklausomas, aiškinamasis kintamasis) turi būti **koncentracija** (t. y., tai, ką dedame į prietaisą). 
+Darome prielaidą, kad ši koncentracija išmatuota visiškai tiksliai, t. y., be (pa)klaidų.
++ $Y$ (priklausomas, atsako kintamasis) turi būti **optinis tankis** ar kitas rodmuo, kurį išmatuoja prietaisas.
+Prietaisas matuoja su paklaidomis, o modelis į šias paklaidas atsižvelgia. 
+
+Koeficientų interpretacija:
+
++ $a$ -- tai taškas, ties kuriuo kreivė kerta y ašį. Kai kuriais atvejais biologinės interpretacijos gali ir neturėti (jei, pvz., nerealu, kad $X$ gali įgauti reikšmes artimas 0). Matavimo vienetai tokie patys kaip ir $Y$.
++ $b$ -- parodo, kiek vienetų pakinta $Y$, kai $X$ pakinta vienu vienetu. Matavimo vienetai tokie, kad matematiškai teisingai iš $X$ vienetų gautume $Y$ vienetus.
+
+Matavimo vienetų pavyzdžiai:  
+$$Y = a + bX + \varepsilon ~~~ ↔ ~~~ [cm] = [cm] + [cm/kg] · [kg] + [cm]$$
+
+
+# Prielaidų tikrinimas
+
+Vienas iš modeliavimo etapų yra atlikti taip vadinamą modelio „diagnostiką“: parikrinti, ar duomenys tinkami modeliui ir ar modelis tinkamas duomenims.
+
+
+## Duomenų tinkamumo modeliui vertinimas
+
+Kai turime 2 kimtiamuosius ($X$ ir $Y$), duomenų tinamumą modeliui įprastai vertiname prieš modeliuodami (prieš ieškodami lygties koeficientų).
+Tam pasitelkiame sklaidos diagramą, iš kurios nustatome:
+
+1) ar sąsaja tiesinė;
+2) ar nėra aiškių išskirčių (pavienių nuo tiesės ar taškų spiečiaus „pabėgusių“ taškų);
+3) ar nėra aiškaus [heteroskedastiškumo](https://en.wikipedia.org/wiki/Heteroscedasticity) (idealiu atveju taškai turi būti išsidėstę į tolygaus pločio juostelę, t.y., turi nebūti taškų sklaidos apie tiesę „plėtimosi“, „siaurėjimo“ (piltuvėlio efekto) ar kitokių aiškių tendencijų didėjant x reikšmėms).
+Jei yra, tada paklaidos, statistinis patikimumas bus įvertinti neteisingai.
+
+Yra ir kitų labiau formalių metodų, kaip vertinti modelio prielaidas: specializuotų grafikų bei statistinių kriterijų (angl. statistical tests). 
+
+
+## Modelio tinkamumo duomenims vertinimas
+
+Sudarę modelį, turime įvertinti, ar jis pakankamai gerai paaiškina duomenis.
+
+1. Tai, ar bent vienas $X$ statistiškai reikšmingai pagerina modelio tikslumą, sprendžiame pagal ANOVA (dispersinės analizės) regresijos modeliui $p$ reikšmę, kuri lyginama su reikšmingumo lygmeniu $α$. Įprastai moksle $α = 0{,}05$, tad tokiu atveju norime, kad būtų $p < 0{,}05$. Jei $p ≥ 0{,}05$, modelio nagrinėti nėra prasmės (modelis duomenų nepaaiškina). 
+
+    **PASTABA:** Atskiros ANOVA analizės, kokią darėme ankstesnių pratybų metu, atlikti nereikia. Šis rodiklis yra regresinės analizės dalis, tik reikia zinoti, kur pasižiūrėti.
+2. Modelio tikslumą vertinsime pagal determinacijos koeficientą $R^2$.
+Jis parodo, kurią taškų **kitimo** (dispersijos) dalį paaiškina modelis (tiesė).
+Labai supaprastintai sakant, $R^2$ parodo, kaip gerai atitinka tikrasis rezultatas, ir tas, kurio tikimės (t.y., kurį prognozuojame).
+Kuo $R^2$ reikšmė yra arčiau 1, tuo atitinka geriau (kai $R^2 = 1$, visi taškai yra išsidėstę į vieną tiesę, o koeficiento didėjimas rodo, kad paklaidos didėja, o taškai tolsta nuo tiesės).
+Nulis -- pats prasčiausias rezultatas (negalima tiksliai pasakyti, kuria kryptimi eina geriausiai taškus atitinkanti tiesė).
+Kalibracijos atveju norime, kad $R^2 ≈ 1$, bendrai regresijos analizės metu determinacijos koef. turėtų būti bent 0,20 $(R^2 ≥ 0{,}20).$
+
+Yra ir kitų kriterijų, bet jie nėra aktualūs, jei turime tik vieną aiškinamąjį kintamąjį $(X).$
+
+
+
+# Duomenų įkėlimas ir peržiūra
+
+Duomenis (medžiagos koncentraciją ir prietaisu užregistruotą optinį tankį OD) išsaugojome į „Excel“ bylą.
+Pirma reikia ją atsidaryti ir peržiūrėti, ką turime.
+Tada nuskaityti į „R“.
+
+```{r, eval=FALSE}
+excel_sheets("duomenys/kalibravimui_d1.xlsx")
+```
+
+```{r}
+# Duomenų įkėlimas.
+duomenys_d1 <- read_excel("duomenys/kalibravimui_d1.xlsx", sheet = "duomenys")
+```
+
+Nuskaitytus duomenis reikia peržiūrėti (atlikti skaitines ir grafines suvestines, kad žinotume, ką turime, ir kad viskas su duomenimis tvarkoje).
+
+```{r eval=FALSE}
+# Pažiūrime, kaip atrodo duomenys R'e lentelės pavidalu
+View(duomenys_d1)
+```
+
+```{r}
+# Užduotis: pasakykite, kiek eilučių, stulpelių ir kokie stulpelių pavadinimai.
+glimpse(duomenys_d1)
+```
+
+Duomenų suvestinė
+```{r}
+# Užduotis: atsakykite, kokiose ribose kinta koncentracija ir optinis tankis.
+summary(duomenys_d1)
+```
+
+
+Grafikas - sklaidos diagrama.
+```{r fig.height=4}
+# Kodas naudojamas taip: mano_Y ~ mano_X, data = mano_duomenys
+plot(OD ~ koncentracija, data = duomenys_d1)
+```
+
+Grafikas - sklaidos diagrama su regresijos tiese.
+
+```{r}
+ggplot(duomenys_d1, aes(x = koncentracija, y = OD)) +
+  geom_smooth(method = lm, formula = y ~ x, se = FALSE) +
+  geom_point(alpha = 0.5)
+```
+
+
+## Modelio sudarymas
+
+Sudarome tokios formos lygtį: $Y = a + bX$, t. y., $OD = a + b \times koncentracija$.
+```{r}
+# Modelio sudarymas  # lm - linear model (tiesinis modelis)
+modelis <- lm(OD ~ koncentracija, data = duomenys_d1)
+```
+
+# Modelio diagnostika
+
+## Modelio braižymas
+
+Jei legenda uždengia modelį (tiesę, taškus, ...), naudodami parametrą `legend_x` parinkite labiau tinkančią legendos poziciją.
+
+```{r fig.height=4, fig.width=7}
+# Kalibracijos kreivė:
+chemCal::calplot(modelis, xlab = "Koncentracija", ylab = "OD") 
+```
+
+## Modelio parametrų peržiūra
+
+Modelio rezultatus galime pamatyti naudodami funkciją `summary()`.
+
+```{r}
+summary(modelis)
+```
+
+Eilutėse ties `Estimate` pateikti modelio koeficientai. 
+Užrašas `(Intercept)` reiškia, kad tai laisvasis narys, pagal mūsų žymėjimą – koeficientas $a$.
+
+```
+Coefficients:
+                Estimate 
+(Intercept)   -0.0053379 
+koncentracija  0.0142699 
+```
+
+Ši eilutė rodo ANOVA $p$ reikšmę:
+
+```
+F-statistic:  1673 on 1 and 18 DF,  p-value: < 2.2e-16
+```
+
+Kai lygtyje tik vienas aiškinamasis kintamasis, ANOVA $p$ ir $t$ kriterijaus $p$ tam kintamajam (žymima `Pr(>|t|)`) sutampa. Skaičius gali atrodyti skirtingas tik dėl skirtingo apvalinimo spausdinant rezultatus:
+
+```
+                Estimate Std. Error t value Pr(>|t|) 
+
+koncentracija  0.0142699  0.0003489  40.898   <2e-16 ***
+```
+
+
+O šioje vietoje rašytas determinacijos koeficientas R²:
+
+```
+Multiple R-squared:  0.9894
+```
+
+
+
+
+Šiuos dalykus galime įvertinti naudodami alternatyvias funkcijas.
+
+1. Ar ryšys tarp $Y$ ir bent vieno $X$ yra statistiškai reikšmingas?
+```{r}
+# ANOVA p reikšmė (ar bent vienas X statistiškai reikšmingai susijęs su Y)
+# Įprastai turi būti p < 0,05.
+broom::glance(modelis)$p.value %>%
+  scales::pvalue(add_p = TRUE) %>%
+  unname() %>%
+  print(quote = FALSE)
+```
+
+2. Kaip gerai modelis paaiškina duomenų kitimą?
+
+```{r}
+# Determinacijos koeficientas R².
+# Kalibracijos atveju turėtų būti R² ≈ 1, bendrai R² ≥ 0,2.
+summary(modelis)$r.squared
+```
+
+
+3. Nustatome koeficientus ir į lygtį įrašome apvalindami tuo pačiu tikslumu.
+
+```{r}
+# Vien tik koeficientai
+coef(modelis)
+```
+
+
+
+
+
+<details>
+<summary><b>Papildoma:</b> R² ir RMSE</summary>
+
+
+Tam, kad būtų aiškiau, ką daro kita kodo eilutė:
+```{r}
+duomenys_is_modelio <- model.frame(modelis)
+head(duomenys_is_modelio)
+```
+
+Pasiimame savo tikrąsias ir modeliuojamas $Y$ reikšmes.
+```{r}
+y_real <- model.frame(modelis)[[1]]
+y_fit  <- fitted(modelis)
+```
+
+Alternatyvus R² skaičiavimas – tiesinės koreliacijos koef. tarp tikrųjų ir prognozuojamų reikšmių kvadratas:
+
+```{r}
+# Alternatyvus R² skaičiavimas
+cor(y_fit, y_real)^2
+```
+
+RMSE (šaknis iš vidutinės kvadratinės klaidos) reikšmė turėtų būti didesnė už SD (standartinį nuokrypį).
+
+```{r}
+# Atsako kintamojo (tikrųjų reikšmių) SD
+sd(y_real)
+```
+
+```{r}
+# Apmokymo duomenų RMSE
+DescTools::RMSE(x = y_fit, ref = y_real)
+```
+
+Alternatyvus būdas skaičiuoti RMSE tiesiniam modeliui – tiesiog funkcijai pateikti tiesinės regresijos modelį:
+
+```{r}
+# Apmokymo duomenų RMSE
+DescTools::RMSE(modelis)
+```
+
+```{r}
+# Santykis tarp RMSE ir SD
+DescTools::RMSE(modelis) / sd(y_real)
+```
+
+</details>
+
+
+## Modelio užrašymas
+
+Tad gauname $OD = -0{,}005 + 0{,}014 × koncentracija$, $R^2 = 0{,}989$.
+
+Prisiminkite, kad modelis tinka tik data, jei tenkinamos modeliui keliamos prielaidos.
+
+
+
+## Išplėstinė peržiūra ir prielaidų tikrinimas
+
+<details>
+<summary><b>Papildoma:</b> modelio suvestinė duomenų lentelės pavidalu</summary>
+
+**Modelio suvestinė.**
+Tai gali atlikti paketo **broom** funkcijos `glance()` (glausta modelio suvestinė), `tidy()` (modeio koeficientai) ir `augment()` (kiti rezultatai, kuriais gali būti papildyta pradinė duomenų lentelė).
+
+```{r}
+broom::glance(modelis) %>% select(1:6)
+broom::glance(modelis) %>% select(7:last_col())
+```
+<!-- Užtektų rašyti tik broom::glance(modelis) -->
+
+```{r}
+broom::tidy(modelis)
+```
+
+```{r}
+broom::augment(modelis) %>%  head()
+```
+
+Apie šiuos rezultatus plačiau nesimokysime.
+
+</details>
+
+
+<details>
+<summary>Prielaidų tikrinimo grafikai <b>(Reikia žinoti)</b></summary>
+
+
+**Prielaidų tikrinimo (diagnostikos) grafikai.**
+
+Jie labai naudingi, kai turime daugiau nei vieną aiškinamąjį kintamąjį ir įprastinės sklaidos diagramos nusibraižyti negalime.
+
+```{r fig.height=5, fig.width=5}
+op <- par(mfrow = c(2, 2))
+plot(modelis)
+par(op)
+```
+
+Apie diagnostikos grafikų interpretaciją: <https://data.library.virginia.edu/diagnostic-plots/>.
+
+
+</details>
+
+
+<details>
+<summary><b>Papildoma:</b>statistiniai prielaidų tikrinimo kriterijai</summary>
+
+
+**Prielaidų tikrinimo (diagnostikos) kriterijai.**
+
+Prieš juos naudojant, reiktų suprasti, kaip „veikia“ ir ką iš tiesų rodo (bei ko nerodo) statistiniai kriterijai. Keletas pastabų labai trumpai:
+
+1. „Maža $p$“, kai $p < α$, „didelė $p$“, kai $p ≥ α$, $α$ įprastai 0,05.
+2. Maža $p$ rodo, kad koks nors nuokrypis yra statistiškai reikšmingas.
+Didelė $p$ rodo, kad nėra pagrindo teigti, jog nuokrypis yra (t.y., ne kad „nuokrypio nėra“, o kad „nėra pagrindo taip teigti“. Tikiuosi, suvokiate skirtumą tarp šių teiginių).
+3. Tikrinant prielaidas, statistiškai reikšmingas rezultatas įprastai reikšmia, kad kuri nors prielaida yra pažeista.
+4. **Svarbu!** Kuo imtys yra mažesnės, tuo dažniau bus $p ≥ α$, jei imtys labai didelės, tai net menkiausi nuokrypiai bus pripažįstami statistiškai reikšmingais. 
+*Apibendrinimas toks:* jei imtys per mažos, tai kriterijai nebus pajėgūs atrasti prielaidų pažeidimų.
+5. Tarp rezultatų, $p$ reikšmės įprastai yra rašomos ties `p-value`.
+
+
+Funkcija `resid()`{.r} arba `residuals()`{.r} iš modelio paima liekamąsias paklaidas.
+Pagal jas tikrinsime tolimesnes prielaidas.
+
+```{r}
+paklaidos <- residuals(modelis)
+```
+
+```{r}
+# Pasižiūrėjimui: paklaidos, tai skaičių eilutė.
+# (unname() panaikina reikšmių pavadinimus)
+paklaidos %>% unname() %>% head(n = 10)
+```
+
+**Ar paklaidų vidurkis lygus nuliui?**
+Funkcija `t.test()`{.r} tikrina, ar paklaidų vidurkio nuokrypis nuo nulio yra reikšmingas.
+Jei reikšmingas, tada galima įtarti netiesiškumą arba tai, kad dėl kategorinių kintamųjų paklaidos ima barstytis nesimetriškai.
+Kai $p$ didelė (tarkime, $p ≥ 0,05$), prielaida tenkinama, nuokrypis nereikšmingas.
+
+```{r}
+t.test(paklaidos)
+```
+
+**Ar paklaidos skirstosi *normaliai*?**
+Funkcija `shapiro.test()`{.r} atlieka normalumo tikrinimą Shapiro-Wilk kriterijumi.
+Kai $p$ didelė (tarkime, $p ≥ 0,05$), prielaida tenkinama.
+
+```{r}
+shapiro.test(paklaidos)
+```
+
+
+
+**Ar taškų sklaida yra vienoda ties kiekviena $X$ reikšme?**
+(Ar tenkinama homoskedastiškumo prielaida?)
+Tam naudojamas stjudentizuotasis Breusch-Pagan kriterijus.
+Kai $p$ didelė (tarkime, $p ≥ 0,05$), prielaida tenkinama.
+
+```{r}
+lmtest::bptest(modelis)
+```
+
+
+**Ar yra išskirčių?**
+Šis kriterijus rodo tik tai, ar yra bent vena išskirtis.
+Reikia vertinti rezultatą ties `Bonferroni p`.
+
+```{r paged.print=FALSE}
+car::outlierTest(modelis)
+```
+
+Jei matote užrašą:
+
+```
+No Studentized residuals with Bonferroni p < 0.05
+```
+ir `Bonferroni p` yra didesnė už 0,05 arba ties ja parašyta `NA`, tai išskirčių nerasta.
+
+Pavyzdys, kai išskirčių nėra, bet labiausiai į išskirtį panašus taškas yra taškas Nr. 5 (5-ta eilutė):
+```
+Largest |rstudent|:
+   rstudent unadjusted p-value Bonferroni p
+5 -2.336234           0.044293      0.53151
+```
+
+</details>
+
+
+# Modelio naudojimas
+
+Vėliau tuo pačiu prietaisu, pagal kuriuo sugeneruotus duomenis sudarėme kalibracijos lygtį, atlikome eksperimentą: tyrėme vieną mėgintuvėlį.
+Nustatėme, kad optinis tankis buvo toks: 0,334.
+Kokia buvo koncentracija tame mėgintuvėlyje?
+
+
+
+## Prognozavimas (atvirkštinis): X pagal Y
+
+**Pastaba:** atkreipkite dėmesį, kad tai atvirkštinis uždavinys (t.y., X pagal Y, o ne Y pagal X).
+
+```{r}
+# Vienu metu gali būti nurodoma tik viena nauja reikšmė.
+rez <- chemCal::inverse.predict(modelis, newdata = 0.334)
+rez
+```
+
+Elementas
+
+    $Prediction
+rodo koncentracijos įvertį, o
+
+    $`Confidence Limits`
+95% pasikliautinąjį intervalą (paklaidos rūšis, kuri mums rūpi labiausiai).
+
+
+
+## Detalesnė analizė
+
+<details>
+<summary><b>Papildoma:</b> LOD ir LOQ</summary>
+
+
+```{r}
+# LOD - level of detection
+chemCal::lod(modelis)
+```
+
+Plačiau skaitykite `?chemCal::lod`.
+
+```{r}
+# LOQ - level of quantification
+chemCal::loq(modelis)
+```
+
+Plačiau skaitykite `?chemCal::loq`.
+
+
+</details>
+
+
+# Nuorodos {-}
+
+1. Apie regresinės analizės vykdymą programa „R“ <http://www.sthda.com/english/articles/39-regression-model-diagnostics/161-linear-regression-assumptions-and-diagnostics-in-r-essentials/>
+2. Apie tiesinių modelių (tarp jų ir regresinės analizės modelio) diagnostikos grafikų interpretavimą <https://data.library.virginia.edu/diagnostic-plots/>.
+3. Čekanavičiaus ir Murausko vadovėlis „Taikomoji regresinė analizė socialiniuose tyrimuose“ (2014), kuriame koncentruojamasi ties taikomaisiais regresinės analizės aspektais bei parodoma, kaip analizę atlikti įvairiomis programomis (tarp jų ir „R“) <http://www.statistika.mif.vu.lt/wp-content/uploads/2014/04/regresine-analize.pdf>.
