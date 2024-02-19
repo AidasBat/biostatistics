@@ -7,4 +7,3 @@ ggplot_data_visualization/* linguist-vendored
 hypothesis_testing/* linguist-vendored 
 linear_regression/* linguist-vendored 
 principal_component_analysis_PCA/* linguist-vendored
-*.ipynb -linguist-detectable
