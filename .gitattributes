@@ -9,4 +9,4 @@ principal_component_analysis_PCA/* linguist-vendored
 *.python linguist-detectable=false
 *.html linguist-detectable=false
 *.CSS linguist-detectable=false
-*.CSS linguist-vendored
+*.* linguist-detectable=false
