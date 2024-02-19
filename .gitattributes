@@ -7,6 +7,4 @@ linear_regression/* linguist-vendored
 principal_component_analysis_PCA/* linguist-vendored
 *.R linguist-detectable=true
 *.python linguist-detectable=false
-*.html linguist-detectable=false
-*.CSS linguist-detectable=false
-&hide=CSS, html
+*.html linguist-vendored
