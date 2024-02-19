@@ -1,3 +1,3 @@
 # Biodata statistics
 
-- Biodata statistical analysis tasks which were completed during university course.
+- Biodata statistical analysis tasks which were completed by using R during university course.
