@@ -1,9 +1,3 @@
-*.R linguist-detectable=true
-*.html linguist-vendored
-contingency_tables/* linguist-vendored 
-data_analysis_task/* linguist-vendored 
-eeg_ldaep_analysis/* linguist-vendored 
-ggplot_data_visualization/* linguist-vendored 
-hypothesis_testing/* linguist-vendored 
-linear_regression/* linguist-vendored 
-principal_component_analysis_PCA/* linguist-vendored
+*.R linguist-detectable
+*.Rproj linguist-detectable
+*.css linguist-vendored
